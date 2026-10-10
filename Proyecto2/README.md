@@ -19,12 +19,14 @@ Los datos y el modelo **no se suben al repositorio**: cada persona los genera en
 | Nombre | Tarea | Qué entrega | Fichero |
 |---|---|---|---|
 | Jia Xi | T1 Comprender | Preguntas P1–P11 con palabras propias y ejemplos del log; diagrama del flujo con los datos que viajan en cada flecha | `notebooks/T1_comprender.ipynb`, `docs/diagrama_flujo.md` |
-| Alejandro | T2 Experimentos I | E1 (umbral), E2 (quitar características), E3 (regla simple) y E8 (experimento propio), con hipótesis, resultado y explicación; pregunta P12 | `notebooks/T2_umbral_y_caracteristicas.ipynb` |
+| Sergio | T2 Experimentos I | E1 (umbral), E2 (quitar características), E3 (regla simple) y E8 (experimento propio), con hipótesis, resultado y explicación; pregunta P12 | `notebooks/T2_umbral_y_caracteristicas.ipynb` |
 | Noel | T3 Experimentos II | E4 (azar del reparto), E5 (otra semilla), E6 (pocos ataques) y E7 (sin etiquetas), con hipótesis, resultado y explicación; pregunta P13 | `notebooks/T3_azar_y_datos_nuevos.ipynb` |
-| Jorge | T4 API | `GET /salud` y `POST /analizar` con validación, errores, lista blanca y límite de líneas; explicación de cómo funciona | `api/main.py`, `api/README.md` |
-| Sergio | T5 Interfaz | Interfaz que llama a la API: cargar o pegar el log, umbral, lista blanca, tabla de resultados y errores comprensibles; explicación | `interfaz/`, `interfaz/README.md` |
-| Argail | T6 Pruebas y motivos | Función que redacta el `motivo` de cada IP; documento de pruebas con al menos 4 peticiones (esperado frente a obtenido) | `api/motivos.py`, `pruebas/PRUEBAS.md` |
+| Argail | T4 API | `GET /salud` y `POST /analizar` con validación, errores, lista blanca y límite de líneas; explicación de cómo funciona. *Opcional, solo cuando todo funcione:* clave de API (ampliación del enunciado), avisando antes a T5 y T6 | `api/main.py`, `api/README.md` |
+| Alejandro | T5 Interfaz | Página web responsive que llama a la API: cargar o pegar el log, umbral, lista blanca, tabla de resultados y errores comprensibles; explicación | `interfaz/`, `interfaz/README.md` |
+| Jorge | T6 Pruebas y motivos | Función que redacta el `motivo` de cada IP; pruebas con Postman de al menos 4 peticiones (esperado frente a obtenido) y la colección exportada | `api/motivos.py`, `pruebas/PRUEBAS.md`, `pruebas/P2_detector.postman_collection.json` |
 | Daniel (jefe) | T7 Informe y revisión final | Revisión de todo, unión de cuadernos, informe, demo y entrega | `notebooks/P2_analisis_intrusiones.ipynb`, `docs/INFORME.md` |
+
+T4, T5 y T6 están asignadas según lo que cada uno hizo en prácticas: Argail, un sistema de login (la API también valida lo que recibe y responde con errores claros); Alejandro, páginas web y diseño responsive (la interfaz); Jorge, Postman (las pruebas).
 
 A diferencia del Proyecto 1, aquí no numeramos a las personas como P1, P2..., porque en este proyecto **P1–P13 son las preguntas del cuaderno**.
 
@@ -35,11 +37,11 @@ El informe y la defensa son lo que más pesa (30 %). Cada persona escribe un bor
 | Nombre | Borrador del informe | Pregunta de la defensa |
 |---|---|---|
 | Jia Xi | 1. Qué hace el sistema | 5. Atacante con 500 IPs y pocos intentos cada una |
-| Alejandro | 4. Recomendación | 4. Característica que "hace trampa" |
+| Sergio | 4. Recomendación | 4. Característica que "hace trampa" |
 | Noel | 3. Hasta dónde fiarse | 2. Qué enseña E4 · 3. Por qué funciona tan bien |
-| Jorge | — | 1. Bloqueo del director por error · 6. Actualizar el modelo sin parar el servicio |
-| Sergio | — | 7. Datos personales en los logs |
-| Argail | 5. Esquema de la integración | 8. Qué añadir a la API antes de ponerla en Internet |
+| Argail | — | 6. Actualizar el modelo sin parar el servicio · 8. Qué añadir a la API antes de ponerla en Internet (autenticación, límites, HTTPS) |
+| Alejandro | — | 7. Datos personales en los logs |
+| Jorge | 5. Esquema de la integración | 1. Bloqueo del director por error |
 | Daniel | 2. Qué hemos descubierto, y unión de todo | Repaso de todas |
 
 Cada uno lo escribe en su propio fichero: en los cuadernos, en la sección "8. Mi aportación"; T4 y T5, en el `README.md` de su carpeta; T6, en `PRUEBAS.md`. El jefe lo une en `docs/INFORME.md` y `docs/DEFENSA.md`. **Todos tenemos que poder responder cualquier pregunta**: el profesor puede preguntar a quien quiera.
@@ -60,7 +62,7 @@ Cada uno lo escribe en su propio fichero: en los cuadernos, en la sección "8. M
 | Límite | 50 000 líneas por petición |
 | Errores | Código 422 con un campo `detail` que lo explica. Nunca un 500 |
 | Motivo | T6 programa `explicar_motivo(fila)` en `api/motivos.py`; T4 la llama |
-| Interfaz | *(por decidir: página web, JavaFX/Swing o móvil)* |
+| Interfaz | Página web responsive (HTML + JavaScript con `fetch`) que se vea bien también en el móvil *(a confirmar con Alejandro)* |
 
 El detalle de la API (formatos, errores y fallos conocidos del kit) está en [`docs/CONTRATO_API.md`](docs/CONTRATO_API.md). Si hay que cambiar algo del contrato, se habla antes con el jefe.
 
@@ -99,6 +101,7 @@ El detalle de la API (formatos, errores y fallos conocidos del kit) está en [`d
 | `api/` | API REST (`main.py`, `motivos.py`) y su explicación (`README.md`) |
 | `interfaz/` | Interfaz y su explicación (`README.md`) |
 | `pruebas/PRUEBAS.md` | Documento de pruebas |
+| `pruebas/P2_detector.postman_collection.json` | Colección de Postman con las peticiones de prueba |
 | `pruebas/peticiones/` | Cuerpos JSON para probar la API |
 | `docs/CONTRATO_API.md` | Detalle de la API para T4, T5 y T6 |
 | `docs/diagrama_flujo.md` | Diagrama del flujo del sistema (fase 1) |
@@ -185,7 +188,7 @@ Ejemplo de cuerpo (`pruebas/peticiones/lista_blanca.json`, recortado):
 }
 ```
 
-Lo que esperábamos y lo que obtuvimos en cada petición está en [`pruebas/PRUEBAS.md`](pruebas/PRUEBAS.md).
+Las mismas peticiones están en la colección de Postman `pruebas/P2_detector.postman_collection.json` (en Postman: **Import** y elegir el fichero). Lo que esperábamos y lo que obtuvimos en cada petición está en [`pruebas/PRUEBAS.md`](pruebas/PRUEBAS.md).
 
 ### Interfaz *(pendiente, T5)*
 

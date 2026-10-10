@@ -1,10 +1,16 @@
 # Documento de pruebas de la API
 
-**T6 Pruebas y motivos** · Autor: Argail
+**T6 Pruebas y motivos** · Autor: Jorge
 
 > Enunciado: documentar, con capturas o con la salida de `curl`, Postman o la página `/docs`, **al menos cuatro peticiones**: una correcta, una con lista blanca, una con umbral fuera de rango y una con líneas basura. Indicar **qué esperabas y qué obtuviste**.
 
 **Cómo trabajar sin esperar a la API:** rellena ya la columna "Esperado" a partir de [`../docs/CONTRATO_API.md`](../docs/CONTRATO_API.md) y súbelo. Cuando la API funcione (viernes 23), ejecuta cada petición y rellena "Obtenido".
+
+**Con Postman:**
+- Crea una colección `P2_detector` con una petición por fila de la tabla. En cada una, el cuerpo es el contenido del `.json` correspondiente de `peticiones/` (Body → raw → JSON).
+- Usa una variable `base_url` = `http://127.0.0.1:8000` para no repetir la dirección.
+- Si sabes, añade a cada petición un test que compruebe el código esperado (200 o 422), así Postman avisa solo si algo cambia.
+- Exporta la colección como `P2_detector.postman_collection.json` y súbela a esta carpeta. Las capturas de Postman sirven como "Obtenido".
 
 ## Resumen
 
@@ -57,4 +63,4 @@ Todos los comandos se ejecutan desde la carpeta `Proyecto2/` (en Windows, `curl.
 
 ## Para la defensa
 
-### Pregunta 8. ¿Qué añadirías a la API antes de ponerla en Internet (autenticación, límites, HTTPS)?
+### Pregunta 1. Si el detector bloquea por error la dirección del director, ¿qué ha fallado y cómo lo evitarías?

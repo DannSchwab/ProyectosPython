@@ -18,8 +18,8 @@ Proyecto P2 · Optativa Python para IA, 2º DAM
 
 ## 4. Recomendación
 
-*¿Lo desplegaríamos? ¿Con qué umbral, qué revisión humana y qué monitorización?* · Borrador: Alejandro (`notebooks/T2_umbral_y_caracteristicas.ipynb`, sección 8).
+*¿Lo desplegaríamos? ¿Con qué umbral, qué revisión humana y qué monitorización?* · Borrador: Sergio (`notebooks/T2_umbral_y_caracteristicas.ipynb`, sección 8).
 
 ## 5. Esquema de la integración
 
-*Qué piezas hay y cómo se comunican.* · Borrador: Argail (`pruebas/PRUEBAS.md`).
+*Qué piezas hay y cómo se comunican.* · Borrador: Jorge (`pruebas/PRUEBAS.md`).
