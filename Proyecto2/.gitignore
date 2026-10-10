@@ -1,0 +1,22 @@
+# --- Datos y modelos: NO se suben (se regeneran con generar_logs.py y entrenar.py) ---
+*.log
+etiquetas*.csv
+*.joblib
+
+# --- Claves y configuración local ---
+.env
+*.key
+
+# --- Python / Jupyter ---
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+
+# --- Sistema y editores ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

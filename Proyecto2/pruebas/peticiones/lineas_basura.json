@@ -1,0 +1,10 @@
+{
+  "lineas": [
+    "hola",
+    "esto no es una linea de auth.log",
+    "12345",
+    ""
+  ],
+  "umbral": 0.7,
+  "lista_blanca": []
+}

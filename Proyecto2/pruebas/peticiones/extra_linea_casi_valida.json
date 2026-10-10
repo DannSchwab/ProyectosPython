@@ -1,0 +1,8 @@
+{
+  "lineas": [
+    "Foo  7 10:15:32 srv-web01 sshd[1234]: Failed password for root from 203.0.113.9 port 51234 ssh2",
+    "Oct  7 09:02:11 srv-web01 sshd[1840]: Failed password for ana from 192.168.1.20 port 40112 ssh2"
+  ],
+  "umbral": 0.7,
+  "lista_blanca": []
+}

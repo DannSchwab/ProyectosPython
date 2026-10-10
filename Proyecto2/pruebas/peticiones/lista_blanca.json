@@ -1,0 +1,27 @@
+{
+  "lineas": [
+    "Oct  7 09:02:11 srv-web01 sshd[1840]: Failed password for ana from 192.168.1.20 port 40112 ssh2",
+    "Oct  7 09:02:19 srv-web01 sshd[1841]: Accepted password for ana from 192.168.1.20 port 40113 ssh2",
+    "Oct  7 10:15:30 srv-web01 sshd[2101]: Invalid user admin from 203.0.113.45 port 51234",
+    "Oct  7 10:15:30 srv-web01 sshd[2101]: Failed password for invalid user admin from 203.0.113.45 port 51234 ssh2",
+    "Oct  7 10:15:31 srv-web01 sshd[2102]: Invalid user test from 203.0.113.45 port 51235",
+    "Oct  7 10:15:31 srv-web01 sshd[2102]: Failed password for invalid user test from 203.0.113.45 port 51235 ssh2",
+    "Oct  7 10:15:32 srv-web01 sshd[2103]: Invalid user oracle from 203.0.113.45 port 51236",
+    "Oct  7 10:15:32 srv-web01 sshd[2103]: Failed password for invalid user oracle from 203.0.113.45 port 51236 ssh2",
+    "Oct  7 10:15:33 srv-web01 sshd[2104]: Invalid user ubuntu from 203.0.113.45 port 51237",
+    "Oct  7 10:15:33 srv-web01 sshd[2104]: Failed password for invalid user ubuntu from 203.0.113.45 port 51237 ssh2",
+    "Oct  7 10:15:34 srv-web01 sshd[2105]: Invalid user postgres from 203.0.113.45 port 51238",
+    "Oct  7 10:15:34 srv-web01 sshd[2105]: Failed password for invalid user postgres from 203.0.113.45 port 51238 ssh2",
+    "Oct  7 10:15:35 srv-web01 sshd[2106]: Invalid user guest from 203.0.113.45 port 51239",
+    "Oct  7 10:15:35 srv-web01 sshd[2106]: Failed password for invalid user guest from 203.0.113.45 port 51239 ssh2",
+    "Oct  7 10:15:36 srv-web01 sshd[2107]: Invalid user pi from 203.0.113.45 port 51240",
+    "Oct  7 10:15:36 srv-web01 sshd[2107]: Failed password for invalid user pi from 203.0.113.45 port 51240 ssh2",
+    "Oct  7 10:15:37 srv-web01 sshd[2108]: Invalid user mysql from 203.0.113.45 port 51241",
+    "Oct  7 10:15:37 srv-web01 sshd[2108]: Failed password for invalid user mysql from 203.0.113.45 port 51241 ssh2",
+    "Oct  7 11:47:03 srv-web01 sshd[3307]: Accepted password for luis from 198.51.100.7 port 45501 ssh2"
+  ],
+  "umbral": 0.7,
+  "lista_blanca": [
+    "203.0.113.45"
+  ]
+}
