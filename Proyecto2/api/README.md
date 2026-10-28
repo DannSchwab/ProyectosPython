@@ -94,7 +94,7 @@ Una línea que no tenga el formato reconocido por `logtools.py` se cuenta como i
 
 ## Cómo se integra `motivos.py`
 
-La API intenta importar `explicar_motivo(fila)` desde `api/motivos.py`, que corresponde a T6 (Jorge). Mientras ese módulo no esté disponible, usa un motivo alternativo sencillo para permitir las pruebas de desarrollo. Al integrar el trabajo del grupo, comprobad que la función de Jorge existe y devuelve una cadena comprensible.
+La API importa directamente `explicar_motivo(fila)` desde `api/motivos.py`, que corresponde a T6 (Jorge). Ese módulo debe estar presente en la carpeta `api/` durante la integración. La función recibe la fila de características de una IP y devuelve el motivo en lenguaje humano.
 
 ## Seguridad y límites
 
@@ -102,6 +102,7 @@ La API intenta importar `explicar_motivo(fila)` desde `api/motivos.py`, que corr
 - La lista blanca se aplica antes de clasificar y esas IPs no se incluyen en los resultados sospechosos.
 - El límite de entrada es de 50.000 líneas por petición.
 - Esta versión no incorpora autenticación. Antes de exponerla fuera del equipo local se deberían añadir autenticación, HTTPS, límites de frecuencia y controles de acceso.
+- CORS está configurado temporalmente con `allow_origins=["*"]` para facilitar la integración de la interfaz. En producción debe limitarse al origen concreto de la interfaz autorizada; CORS no sustituye a la autenticación.
 
 ## Pruebas manuales rápidas
 
@@ -110,5 +111,26 @@ Con el servicio arrancado, `GET /salud` se puede probar desde el navegador o `/d
 2. Una IP incluida en `lista_blanca`: no debe aparecer en `sospechosas`.
 3. `umbral: 1.5`: debe devolver `422`.
 4. `lineas: ["esto no es una línea de auth.log"]`: debe devolver `422`.
+5. Una línea con mes inexistente, hora `25:15:32`, fecha imposible (`Feb 31`) o IP mal formada: se cuenta como ignorada y no debe producir `500`.
+6. Una petición `OPTIONS` desde el origen de la interfaz: debe incluir las cabeceras CORS.
 
 La documentación y las pruebas definitivas del grupo se coordinan con T6 en `pruebas/PRUEBAS.md`.
+
+
+## Preguntas para la defensa
+
+### 6. ¿Cómo actualizar el modelo sin parar el servicio?
+
+Entrenaría una nueva versión del modelo en un fichero separado y comprobaría primero que carga correctamente y supera las pruebas. Después, el servicio podría cargar esa versión en memoria y sustituir la referencia al modelo activo de forma controlada, sin interrumpir las peticiones que estén terminando con el modelo anterior. Si la carga o las comprobaciones fallan, mantendría la versión anterior. La versión actual de esta API carga el modelo una sola vez al arrancar; para disponer de actualización en caliente habría que implementar expresamente ese mecanismo o desplegar nuevas instancias y cambiar el tráfico cuando estén listas.
+
+### 8. ¿Qué añadir antes de poner la API en Internet?
+
+- **Autenticación y autorización** para que solo usuarios o aplicaciones permitidos puedan acceder.
+- **HTTPS** para cifrar las comunicaciones.
+- **Límites de frecuencia y protección frente a abuso**, además del límite actual de 50.000 líneas por petición.
+- **Control de acceso, gestión segura de secretos y configuración de producción**, sin exponer información interna en los errores.
+- **Registro y monitorización** de errores y actividad, evitando guardar datos sensibles innecesarios.
+- **CORS restringido**: cambiar `allow_origins=["*"]` por la dirección concreta de la interfaz web autorizada. CORS no sustituye a la autenticación ni es por sí solo una medida de control de acceso.
+- **Pruebas y despliegue controlado** para validar el modelo y la API antes de dirigir tráfico real.
+
+La API solo identifica actividad sospechosa: no debe bloquear automáticamente direcciones IP ni sustituir la revisión humana.
