@@ -134,7 +134,7 @@ Si se cumplen varias, se juntan separadas por "; ".
 
 Si la página se abre con doble clic (`file://...`) o desde otro puerto (por ejemplo, Live Server), el navegador **bloquea** las llamadas a la API por seguridad. Ahora mismo pasa: la petición previa del navegador recibe un 405.
 
-⏳ **Decisión: Argail activa `CORSMiddleware`** justo después de crear `app = FastAPI(...)`. Si se añade más tarde, da un error al arrancar.
+⏳ **Decisión: Argail activa `CORSMiddleware`** en `main.py`, fuera de cualquier función. Lo más claro es ponerlo justo después de crear `app = FastAPI(...)`. Si se intentara añadir con la API ya en marcha (por ejemplo, dentro de una ruta), daría error.
 
 ```python
 from fastapi.middleware.cors import CORSMiddleware
