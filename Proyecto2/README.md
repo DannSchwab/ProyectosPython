@@ -8,9 +8,9 @@ La API solo informa: nunca bloquea una IP. La decisión final la toma siempre un
 
 ## Datos
 
-Log de autenticación SSH **sintético** de `srv-web01`, generado con `generar_logs.py` del kit. Todo el grupo usa la misma semilla: `--seed ___` (número de lista de ______).
+Log de autenticación SSH **sintético** de `srv-web01`, generado con `generar_logs.py` del kit. Todo el grupo usa la misma semilla: **`--seed 21`**.
 
-Con los valores por defecto del kit salen 384 IPs, de las que 100 son atacantes, y entre 13 000 y 16 000 líneas según la semilla (comprobado con 5 semillas). Las IPs públicas son de rangos reservados para documentación (RFC 5737): no pertenecen a nadie real.
+Con la semilla 21, `generar_logs.py` debe decir: `12425 lineas en auth.log; 384 IPs (100 atacantes) en etiquetas.csv`. Si te sale otra cosa, revisa el comando: la misma semilla genera siempre exactamente el mismo log. Las IPs públicas son de rangos reservados para documentación (RFC 5737): no pertenecen a nadie real.
 
 Los datos y el modelo **no se suben al repositorio**: cada persona los genera en su ordenador (ver [Instalación y ejecución](#instalación-y-ejecución)).
 
@@ -50,7 +50,7 @@ Cada uno lo escribe en su propio fichero: en los cuadernos, en la sección "8. M
 
 | Decisión | Valor |
 |---|---|
-| Semilla | `--seed ___` para todos |
+| Semilla | `--seed 21` para todos. Si ya habías ejecutado algo con otra semilla, hay que repetirlo |
 | Ficheros del kit | `logtools.py` y `generar_logs.py` no se modifican |
 | Datos y modelo | Se generan dentro de `Proyecto2/`. Nunca se suben `auth.log`, `etiquetas*.csv` ni `modelo.joblib` |
 | Cuadernos | Cada uno parte de `notebooks/plantilla.ipynb`. La celda "Base común" no se toca |
@@ -60,7 +60,8 @@ Cada uno lo escribe en su propio fichero: en los cuadernos, en la sección "8. M
 | Dirección de la API | `http://127.0.0.1:8000`, arrancada con `uvicorn api.main:app` desde `Proyecto2/` |
 | `POST /analizar` | Entrada: `lineas`, `umbral` (0 a 1, por defecto 0.7) y `lista_blanca`. Salida: `lineas_ignoradas`, `ips_analizadas` y `sospechosas` (cada una con `ip`, `probabilidad` y `motivo`) |
 | Límite | 50 000 líneas por petición |
-| Errores | Código 422 con un campo `detail` que lo explica. Nunca un 500 |
+| Errores | Código 422 con un campo `detail` que lo explica (un texto o una lista de textos). 503 si falta el modelo. Nunca un 500 |
+| CORS | La API acepta llamadas desde cualquier página (`CORSMiddleware`), para que la interfaz web funcione se abra como se abra |
 | Motivo | T6 programa `explicar_motivo(fila)` en `api/motivos.py`; T4 la llama |
 | Interfaz | Página web responsive (HTML + JavaScript con `fetch`) que se vea bien también en el móvil *(a confirmar con Alejandro)* |
 
@@ -69,7 +70,7 @@ El detalle de la API (formatos, errores y fallos conocidos del kit) está en [`d
 ## Cómo trabajar
 
 1. Cada persona trabaja solo en sus ficheros (columna **Fichero**), sin tocar los de los demás.
-2. Antes del martes 13 de octubre, instala el kit y comprueba que funciona (ver [Instalación y ejecución](#instalación-y-ejecución)).
+2. Antes de nada, instala el kit y comprueba que funciona (ver [Instalación y ejecución](#instalación-y-ejecución)).
 3. T1, T2 y T3: empieza copiando la plantilla (`notebooks/plantilla.ipynb`) con el nombre de tu fichero. Ejecuta las secciones 0 a 5 en orden y después haz tu parte.
 4. Comenta el código y explica con tus palabras qué has hecho y por qué. El jefe tiene que entenderlo para poder defenderlo.
 5. Experimentos (T2 y T3): escribe las hipótesis y **sube el cuaderno antes de ejecutar**. Después ejecuta y vuelve a subirlo. GitHub guarda la fecha de cada subida, así se ve que la hipótesis iba primero.
@@ -80,13 +81,10 @@ El detalle de la API (formatos, errores y fallos conocidos del kit) está en [`d
 
 **Fechas**
 
-- Kit funcionando en todos los ordenadores: **martes 13 de octubre** (el lunes 12 es festivo).
-- Primera subida, con la mitad de cada tarea: **lunes 19 de octubre**.
-  T1: P1–P6 · T2: E1 y E2 · T3: E4 y E5 · T4: `/salud` y `/analizar` con una línea · T5: interfaz con una respuesta simulada · T6: peticiones con su resultado esperado y primera versión de `explicar_motivo`.
-- API e interfaz funcionando juntas: **viernes 23 de octubre**.
-- Fecha límite de subida: **lunes 26 de octubre**.
-- Ensayo de la defensa, todo el grupo: **jueves 29 de octubre**.
-- Entrega final: **viernes 30 de octubre** (a confirmar por el profesor).
+- Subir lo que haya, aunque esté a medias: **jueves 29 de octubre por la noche**, después del examen. Ese día Argail sube también la API arreglada, porque la interfaz y las pruebas dependen de ella.
+- Fecha límite de subida: **viernes 30 de octubre a las 21:00**.
+- Entrega final: **sábado 31 de octubre a las 23:59**.
+- Defensa oral y ensayo: fecha por confirmar.
 
 ## Estructura del repositorio
 
@@ -126,7 +124,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 # 3. Generar el log y las etiquetas con la semilla del grupo
-python generar_logs.py --seed ___ --salida auth.log --etiquetas etiquetas.csv
+python generar_logs.py --seed 21 --salida auth.log --etiquetas etiquetas.csv
 
 # 4. Entrenar el modelo
 python entrenar.py --log auth.log --etiquetas etiquetas.csv --salida modelo.joblib

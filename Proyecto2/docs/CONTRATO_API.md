@@ -1,43 +1,39 @@
 # Contrato de la API
 
-> **Estado: PROPUESTA.** Se acepta antes de empezar (martes 13 de octubre). Después, cualquier cambio se habla con el jefe y con T4 (API), T5 (interfaz) y T6 (pruebas y motivos).
+> **Actualizado el 28 de octubre** con lo que hace de verdad la API que programó Argail (versión del 25/10). Es la referencia para la interfaz (T5) y las pruebas (T6). Cualquier cambio se habla con el jefe.
 
-Un **contrato** es el acuerdo sobre qué se envía y qué se recibe exactamente. Sirve para que tres personas programen a la vez piezas que tienen que encajar sin esperar unas a otras.
+Un **contrato** es el acuerdo sobre qué se envía y qué se recibe exactamente. Sirve para que varias personas programen piezas que tienen que encajar.
 
-En cada apartado se distingue:
-- 📌 **Enunciado**: lo exige el profesor; no se negocia.
-- 💡 **Propuesta**: decisión nuestra; se puede cambiar si se acuerda.
+- 📌 = lo exige el enunciado.
+- ⏳ = pendiente de arreglar antes del **jueves 29 por la noche**.
 
 ---
 
 ## Dirección y arranque
 
-- 💡 `http://127.0.0.1:8000` (puerto por defecto de `uvicorn`).
-- 💡 Se arranca desde la carpeta `Proyecto2/` con `uvicorn api.main:app --reload`. Así `api/main.py` puede hacer `import logtools` (comprobado).
-- 📌 Se **importan** `cargar_lineas` y `construir_features` desde `logtools.py`; no se copia su código.
-- 📌 El modelo se carga **una sola vez, al arrancar** (no en cada petición).
-- 💡 Si `modelo.joblib` no existe, el servidor no arranca y muestra un mensaje claro: "Falta modelo.joblib: ejecuta entrenar.py".
+- `http://127.0.0.1:8000`, arrancando desde la carpeta `Proyecto2/` con `uvicorn api.main:app --reload`.
+- 📌 Importa `cargar_lineas` y `construir_features` de `logtools.py`, sin copiar su código.
+- 📌 El modelo se carga **una sola vez, al arrancar**. Por defecto lee `modelo.joblib` de `Proyecto2/`; con la variable de entorno `MODELO_PATH` se puede usar otro fichero.
+- Si falta el modelo, la API arranca igualmente, pero `/salud` y `/analizar` responden **503** con un mensaje que explica cómo generarlo.
 
 ---
 
 ## `GET /salud`
 
-📌 Devuelve `{"estado": "ok"}` y la información útil que consideremos.
-
-💡 Respuesta propuesta (código 200):
+Respuesta 200 (comprobada):
 
 ```json
 {
   "estado": "ok",
-  "caracteristicas": ["n_eventos", "n_fallos", "n_ok", "n_usuarios", "n_inv",
-                      "duracion_min", "ratio_fallos", "fallos_por_min",
-                      "es_interna", "max_fallos_5min", "hora_media"],
-  "umbral_por_defecto": 0.7,
-  "max_lineas": 50000
+  "modelo_cargado": true,
+  "caracteristicas_esperadas": ["n_eventos", "n_fallos", "n_ok", "n_usuarios", "n_inv",
+                                "duracion_min", "ratio_fallos", "fallos_por_min",
+                                "es_interna", "max_fallos_5min", "hora_media"],
+  "limite_lineas": 50000
 }
 ```
 
-`caracteristicas` se saca del propio modelo (`modelo.feature_names_in_`), no se escribe a mano. La lista de arriba es la que tiene un modelo entrenado con el kit (comprobado).
+La lista de características se saca del propio modelo (`modelo.feature_names_in_`), no está escrita a mano.
 
 ---
 
@@ -47,24 +43,26 @@ En cada apartado se distingue:
 
 | Campo | Tipo | ¿Obligatorio? | Por defecto | Regla |
 |---|---|---|---|---|
-| `lineas` | lista de textos | 📌 sí | — | 💡 entre 1 y 50 000 líneas |
-| `umbral` | número | no | 📌 `0.7` | 📌 entre 0 y 1 |
-| `lista_blanca` | lista de textos (IPs) | no | 💡 `[]` | 📌 estas IPs **nunca** aparecen como sospechosas |
+| `lineas` | lista de textos | 📌 sí | — | Entre 1 y 50 000 líneas |
+| `umbral` | número | no | 📌 `0.7` | 📌 Entre 0 y 1 |
+| `lista_blanca` | lista de IPs | no | `[]` | Tienen que ser IPs válidas. 📌 Nunca aparecen como sospechosas |
 
-💡 **¿Por qué 50 000 líneas como máximo?** Un `auth.log` completo generado con el kit tiene entre 13 000 y 16 000 líneas (comprobado con 5 semillas distintas). 50 000 deja margen para analizar un log entero y a la vez impide que alguien tumbe el servicio enviando millones de líneas.
+No se admiten campos extra: cualquier otro campo da 422.
+
+**¿Por qué 50 000 líneas como máximo?** Con la semilla 21, el `auth.log` completo tiene 12 425 líneas. 50 000 deja margen para analizar un log entero y a la vez impide que alguien tumbe el servicio enviando millones de líneas.
 
 ### Respuesta correcta (código 200)
 
 | Campo | Tipo | Significado |
 |---|---|---|
-| `lineas_ignoradas` | entero | 📌 Líneas que no se han podido interpretar |
-| `ips_analizadas` | entero | 📌 IPs distintas encontradas. 💡 Incluye las de la lista blanca: se analizan, pero nunca se marcan |
-| `sospechosas` | lista | 📌 IPs con probabilidad ≥ umbral que no están en la lista blanca. 💡 Ordenadas de mayor a menor probabilidad |
+| `lineas_ignoradas` | entero | 📌 Líneas que no tienen el formato de `auth.log` |
+| `ips_analizadas` | entero | 📌 IPs distintas analizadas, **sin contar las de la lista blanca** |
+| `sospechosas` | lista | 📌 IPs con probabilidad ≥ umbral que no están en la lista blanca. Vienen **ordenadas por IP**, no por probabilidad: si se quieren de mayor a menor, que las ordene la interfaz |
 | `sospechosas[].ip` | texto | 📌 |
-| `sospechosas[].probabilidad` | número (0–1) | 📌 💡 Redondeado a 3 decimales |
-| `sospechosas[].motivo` | texto | 📌 Por qué se marca, en lenguaje humano |
+| `sospechosas[].probabilidad` | número entre 0 y 1 | 📌 Redondeado a 4 decimales |
+| `sospechosas[].motivo` | texto | 📌 Por qué se marca, en lenguaje humano (lo redacta `api/motivos.py`) |
 
-💡 Se usa **≥** (mayor o igual) porque es el mismo criterio que usa el cuaderno en `evaluar_xy`.
+Se usa **≥** (mayor o igual), el mismo criterio que usa el cuaderno en `evaluar_xy`.
 
 Forma de la respuesta (los `<...>` se sustituyen por valores reales; esto **no** es un resultado):
 
@@ -78,82 +76,73 @@ Forma de la respuesta (los `<...>` se sustituyen por valores reales; esto **no**
 }
 ```
 
-**T5 (interfaz):** mientras la API no exista, crea `interfaz/respuesta_simulada.json` con esta forma y valores inventados por ti (que se note que son falsos, por ejemplo IPs `0.0.0.x`), y haz que la interfaz lo lea. Cuando la API funcione, cambias la lectura del fichero por la llamada real.
-
 ---
 
 ## Errores
 
 📌 Los errores usan códigos HTTP adecuados (422 para datos inválidos) y mensajes comprensibles. Nunca debe salir un **500**: si sale, es un fallo nuestro.
 
-| Situación | Código | Quién lo produce |
+| Situación | Código | Forma de `detail` |
 |---|---|---|
-| JSON mal formado, falta `lineas` o un campo tiene un tipo incorrecto | 422 | FastAPI automáticamente |
-| `umbral` menor que 0 o mayor que 1 | 422 | FastAPI automáticamente si se declara con `Field(ge=0, le=1)` |
-| `lineas` vacía o con más de 50 000 | 422 | Validación del modelo de datos o comprobación propia |
-| Ninguna línea reconocible | 422 | Comprobación propia, p. ej. "Ninguna línea tiene el formato de auth.log" |
+| JSON mal formado, falta `lineas`, tipo incorrecto o campo extra | 422 | Lista de textos |
+| `umbral` menor que 0 o mayor que 1 | 422 | Lista de textos |
+| `lineas` vacía o con más de 50 000 | 422 | Lista de textos |
+| IP no válida en `lista_blanca` | 422 | Lista de textos |
+| Ninguna línea reconocible | 422 | Texto |
+| Falta el modelo | 503 | Texto |
+| ⏳ Línea "casi válida" (mes que no existe, hora 25, IP mal formada) | Hoy da **500**. Tras el arreglo, se contará como ignorada | — |
 
-### ⚠️ El cuerpo de los errores no siempre tiene la misma forma
+**La interfaz tiene que saber mostrar las dos formas de `detail`** (comprobado):
 
-Comprobado con FastAPI 0.143: todos los errores traen un campo `detail`, pero:
-
-- en los errores **automáticos** de validación, `detail` es una **lista** de objetos (cada uno con un `msg` que explica el problema);
-- en los errores **propios** (`HTTPException`), `detail` es un **texto**.
-
-**Decisión pendiente (antes del martes 13):** o la interfaz (T5) sabe mostrar los dos casos, o la API (T4) unifica el formato. Lo más sencillo es lo primero.
-
----
-
-## Trampas conocidas del kit (comprobadas)
-
-Estas situaciones hacen que el código del kit falle. Como `logtools.py` **no se modifica**, la API tiene que protegerse antes de llamarlo:
-
-1. **Log sin ninguna línea válida.** `construir_features` falla con una tabla vacía (`AttributeError`). Hay que comprobar antes que hay al menos un evento y devolver 422.
-2. **Líneas "casi válidas".** Algunas líneas con la forma correcta pero datos imposibles no se ignoran, sino que lanzan una excepción:
-   - mes que no existe (`Foo  7 10:15:32 ...`) → `KeyError` en `parsear_linea`;
-   - hora `25:15:32` o día `Feb 31` → `ValueError` en `parsear_linea`;
-   - IP mal formada (`from 999.1.1 port ...`) → pasa `cargar_lineas`, pero falla luego en `construir_features`.
-
-   Tienen que acabar como ignoradas o como un 422 claro, nunca como un 500. Es un buen caso para el documento de pruebas (`pruebas/peticiones/extra_linea_casi_valida.json`).
-3. **Orden de las columnas.** El modelo espera las características en el mismo orden que en el entrenamiento: seleccionarlas con `X[modelo.feature_names_in_]`.
-4. **`n_inv` cuenta líneas, no intentos.** Cada intento con un usuario inexistente genera dos líneas (`Invalid user ...` y `Failed password for invalid user ...`), así que `n_inv` sale aproximadamente el doble que el número de intentos. Hay que tenerlo en cuenta al redactar el `motivo`.
+- Errores de validación: una **lista de textos**, cada uno con dónde está el problema y qué pasa. Por ejemplo: `["body → umbral: Input should be less than or equal to 1"]`.
+- Errores propios de la API: un **texto**. Por ejemplo: `"No se ha reconocido ninguna línea válida de auth.log. Comprueba el formato del log."`.
 
 ---
 
-## El campo `motivo` (T6)
+## Trampas conocidas del kit
 
-💡 **Firma acordada:** T6 programa en `api/motivos.py`:
+Como `logtools.py` **no se modifica**, la API tiene que protegerse antes de llamarlo:
 
-```python
-def explicar_motivo(fila):
-    """fila: una fila de la tabla de construir_features (una IP), con acceso fila["n_usuarios"], etc.
-    Devuelve un texto en lenguaje humano."""
-```
+1. **Log sin ninguna línea válida.** `construir_features` falla con una tabla vacía. Resuelto: la API lo comprueba antes y devuelve 422.
+2. ⏳ **Líneas "casi válidas".** Con un mes que no existe (`Foo  7 10:15:32 ...`), una hora `25:15:32`, un día `Feb 31` o una IP mal formada (`from 999.1.1 port ...`), `logtools.py` lanza una excepción en vez de ignorar la línea, y la API responde 500.
+   **Arreglo (Argail):** antes de llamar a `cargar_lineas`, recorrer las líneas y probar cada una con `parsear_linea` (de `logtools`) y con `ipaddress.ip_address` sobre su IP, dentro de un `try/except (KeyError, ValueError)`. Las que fallen se cuentan como ignoradas y no se pasan a `cargar_lineas`. Probado en una copia: funciona y tarda unos 0,1 segundos más con un log completo. Para probarlo: `pruebas/peticiones/extra_linea_casi_valida.json`.
+3. **Orden de las columnas.** El modelo espera las características en el mismo orden que en el entrenamiento. Resuelto: la API las ordena con `modelo.feature_names_in_`.
+4. **`n_inv` cuenta líneas, no intentos.** Cada intento con un usuario inexistente genera dos líneas (`Invalid user ...` y `Failed password for invalid user ...`). Resuelto en `motivos.py`, que divide entre 2.
 
-y T4 la usa así: `from api.motivos import explicar_motivo`.
+---
 
-💡 Reglas de partida (los números son un punto de partida, no resultados; se pueden ajustar con lo que salga en E3):
+## El campo `motivo` (T6, `api/motivos.py`)
+
+La API llama a `explicar_motivo(fila)`, donde `fila` es la fila de la IP en la tabla de `construir_features`. Reglas que aplica:
 
 | Condición | Texto |
 |---|---|
 | `n_usuarios` ≥ 3 | "prueba N usuarios distintos" |
-| `n_inv` ≥ 1 | "N intentos con usuarios que no existen" (recuerda: `n_inv` / 2) |
+| `n_inv` ≥ 1 | "presenta usuarios inexistentes (aproximadamente N intentos)", con N = `n_inv` / 2 |
 | `max_fallos_5min` ≥ 5 | "N fallos en 5 minutos" |
 | `n_ok` ≥ 1 y `n_fallos` ≥ 3 | "consigue entrar después de N fallos" |
-| ninguna de las anteriores | "comportamiento parecido a los ataques vistos en el entrenamiento" |
+| Ninguna de las anteriores | "comportamiento parecido a los ataques vistos en el entrenamiento" |
 
 Si se cumplen varias, se juntan separadas por "; ".
 
+- ⏳ **Jorge:** añadir una regla para los ataques lentos contra un solo usuario (`n_usuarios` = 1, muchos fallos y ningún acceso correcto), que ahora salen con el motivo genérico.
+- ⏳ **Argail:** quitar de `main.py` el motivo de reserva (`_explicar_motivo` con reglas propias). Ya se usa el de Jorge, y la rúbrica pide código sin duplicar.
+
 ---
 
-## Si la interfaz es una página web: CORS
+## CORS: que la página web pueda llamar a la API
 
-Si la página se abre con doble clic (`file://...`) o desde otro puerto, el navegador **bloquea** las llamadas a la API por seguridad (política CORS). Dos soluciones:
+Si la página se abre con doble clic (`file://...`) o desde otro puerto (por ejemplo, Live Server), el navegador **bloquea** las llamadas a la API por seguridad. Ahora mismo pasa: la petición previa del navegador recibe un 405.
 
-- **Opción A (más sencilla):** que FastAPI sirva también la carpeta `interfaz/` (con `StaticFiles`). Así la página y la API salen del mismo sitio y no hay bloqueo.
-- **Opción B:** activar `CORSMiddleware` en la API.
+⏳ **Decisión: Argail activa `CORSMiddleware`** justo después de crear `app = FastAPI(...)`. Si se añade más tarde, da un error al arrancar.
 
-Esto no afecta si la interfaz es una aplicación Java o móvil. **Decisión pendiente (antes del martes 13).**
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+```
+
+Probado en una copia: con esto, una página abierta con doble clic o desde otro puerto puede llamar a `/analizar`, y también recibe el detalle de los errores 422. Antes de poner la API en Internet, `allow_origins` debería limitarse a la dirección de la interfaz (pregunta 8 de la defensa).
 
 ---
 

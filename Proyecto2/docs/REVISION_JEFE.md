@@ -22,11 +22,11 @@ En GitHub, el botón **History** de cada fichero muestra todas sus subidas con f
 | **T5** Alejandro | Llama a la API, no abre `modelo.joblib`. Funciona tanto cargando un fichero como pegando líneas. Se ve bien en pantalla de móvil y de ordenador. Muestra los errores de forma comprensible, tanto si `detail` es un texto como si es una lista | Cómo viaja la petición de la interfaz a la API y de vuelta |
 | **T6** Jorge | Cada petición tiene "Esperado" escrito antes que "Obtenido", con salida o captura. La colección de Postman se importa y funciona. `explicar_motivo` devuelve un texto en todos los casos, también cuando no se cumple ninguna regla, y tiene en cuenta que `n_inv` cuenta dos líneas por intento | Por qué se marca una IP, en palabras que entendería un administrador |
 
-## Revisión final (26 a 29 de octubre)
+## Revisión final (viernes 30 por la noche y sábado 31)
 
 - [ ] Copiar las respuestas y la tabla de T1, T2 y T3 a `notebooks/P2_analisis_intrusiones.ipynb`.
 - [ ] Ejecutar el cuaderno final desde cero (en Jupyter: *Kernel → Restart Kernel and Run All Cells*) con la semilla del grupo, y comprobar que los números del informe coinciden con los del cuaderno.
 - [ ] Probar API e interfaz juntas en un ordenador distinto al de quien las programó, siguiendo solo el README.
 - [ ] Informe de 2 páginas como máximo.
 - [ ] README: rellenar la semilla y el tipo de interfaz, quitar los "pendiente", escribir las Conclusiones y la Nota sobre la entrega.
-- [ ] Ensayo de la demo de 3 minutos y de las 8 preguntas (jueves 29).
+- [ ] Ensayo de la demo de 3 minutos y de las 8 preguntas (antes de la defensa; fecha por confirmar).

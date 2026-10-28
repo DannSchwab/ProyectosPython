@@ -2,7 +2,7 @@
 
 **10 minutos:** 3 minutos de demostración (API e interfaz funcionando) y preguntas del profesor.
 
-Cada persona prepara su pregunta en su propio fichero y el jefe la copia aquí. **Todos tenemos que poder responder cualquiera.** Ensayo: jueves 29 de octubre.
+Cada persona prepara su pregunta en su propio fichero y el jefe la copia aquí. **Todos tenemos que poder responder cualquiera.** Ensayo: antes de la defensa (fecha por confirmar).
 
 ## Guion de la demo (3 minutos)
 
