@@ -2,29 +2,50 @@
 
 **T1 Comprender** · Autora: Jia Xi
 
-> Enunciado: log → eventos → características por IP → modelo → decisión. **En cada flecha hay que indicar qué datos viajan.**
-> Se dibuja con Mermaid: GitHub lo convierte en imagen al abrir este fichero. Para probarlo antes de subirlo: <https://mermaid.live>
-
-Plantilla de partida. Sustituye cada `¿?` por los datos que viajan (qué función se usa, qué forma tienen los datos y un ejemplo):
+El sistema transforma las líneas de `auth.log` en eventos, agrupa los eventos por IP y utiliza 11 características numéricas. El entrenamiento y la detección de nuevas IP son pasos separados.
 
 ```mermaid
-flowchart LR
-    A["auth.log"] -->|"cargar_log()<br/>Texto del log → DataFrame<br/>Ejemplo: IP 192.168.1.10, login fallido"| B["Eventos"]
+flowchart TD
+    A["auth.log<br/>Ejemplo procesado: 2026-10-07 00:00:00<br/>acceso_ok · usuario backup · IP 10.0.0.5"]
+    B["cargar_log()<br/>Texto del log → DataFrame df<br/>Cada fila representa un evento"]
+    C["construir_features(df)<br/>Eventos agrupados por IP → matriz X<br/>11 características numéricas"]
+    A -->|"Líneas de texto del registro"| B
+    B -->|"Eventos: timestamp, tipo, usuario, IP, puerto y usuario_invalido"| C
 
-    B -->|"construir_features()<br/>DataFrame → tabla numérica por IP<br/>Ejemplo: 192.168.1.10, 5 fallos, 2 éxitos"| C["Características por IP"]
+    subgraph ENTRENAMIENTO["Entrenamiento y evaluación"]
+      D["Etiquetas y<br/>y: 0 = legítima, 1 = atacante"]
+      E["Separar X e y<br/>en entrenamiento y prueba"]
+      F["RandomForestClassifier<br/>Entrenar con X_train e y_train"]
+      G["Evaluar con X_test<br/>que el modelo no ha visto"]
+      E -->|"X_train, X_test, y_train, y_test"| F
+      D -->|"Etiquetas reales"| E
+      F -->|"Modelo entrenado"| G
+    end
+    C -->|"X: 384 IP × 11 características (en estos datos)"| E
 
-    C -->|"Entrenar RandomForest<br/>X: matriz numérica de características<br/>Ejemplo: [5, 2, 3]"| D["Modelo"]
-
-    D -->|"predict()<br/>Características de una IP → etiqueta predicha<br/>Ejemplo: 1 = posible intrusión"| E["Decisión"]
+    subgraph DETECCION["Detección de nuevas IP"]
+      H["Nueva tabla de características<br/>11 valores por IP"]
+      I["modelo.predict_proba(X_nuevo)<br/>Probabilidad para cada clase"]
+      J{"¿Probabilidad de atacante ≥ 0,7?"}
+      K["Marcar IP como sospechosa"]
+      L["No marcar como sospechosa"]
+      M["Revisión humana<br/>No se bloquea automáticamente"]
+      H -->|"X_nuevo: matriz numérica"| I
+      I -->|"Probabilidad de la clase atacante"| J
+      J -->|"Sí"| K
+      J -->|"No"| L
+      K --> M
+      L --> M
+    end
+    F -->|"Modelo ya entrenado"| I
 ```
 
 ## Explicación de cada paso
 
-1. **auth.log → eventos:**
-La función `cargar_log()` lee el archivo `auth.log` y convierte sus líneas de texto en un DataFrame llamado `df`. Cada fila representa un evento de autenticación, por ejemplo, un inicio de sesión fallido de una IP.
-2. **Eventos → características por IP:**
-La función `construir_features()` agrupa los eventos por IP y calcula características numéricas, como el número de inicios de sesión fallidos y exitosos. El resultado es una tabla de características llamada `X`.
-3. **Características → modelo:**
-Se utiliza la matriz numérica `X` para entrenar un modelo `RandomForest`. También se utilizan las etiquetas reales `y` para que el modelo aprenda a distinguir entre las IP normales y las que presentan actividad sospechosa.
-4. **Modelo → decisión:**
-La función `predict()` utiliza el modelo entrenado para predecir la etiqueta de una IP. Por ejemplo, `0` puede representar una IP normal y `1` una posible intrusión, según cómo se hayan definido las etiquetas. El resultado sirve para informar del riesgo y requiere revisión humana; no implica bloquear automáticamente la IP.
+1. **`auth.log` → eventos:** `cargar_log()` lee las líneas de texto y las convierte en un DataFrame llamado `df`. Cada fila representa un evento de autenticación.
+2. **Eventos → características por IP:** `construir_features()` agrupa los eventos por IP y calcula 11 características, como `n_eventos`, `n_fallos`, `n_ok`, `n_usuarios` y `max_fallos_5min`. El resultado es la matriz `X`.
+3. **Entrenamiento y evaluación:** el modelo `RandomForestClassifier` aprende con `X_train` e `y_train`. Después se evalúa con `X_test` e `y_test`, que se reservaron y no se utilizaron para entrenarlo.
+4. **Detección:** para analizar nuevas IP, el modelo usa `predict_proba()` para obtener una probabilidad. Se compara la probabilidad de la clase atacante con el umbral `0,7`: si lo alcanza, la IP se marca como sospechosa.
+5. **Decisión final:** el sistema informa de las IP sospechosas, pero no las bloquea automáticamente. Una persona debe revisar el resultado.
+
+El ejemplo de `10.0.0.5` procede de una fila del DataFrame que aparece en el cuaderno. Las 11 características y el umbral `0,7` se han tomado de la información disponible en el proyecto.
