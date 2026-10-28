@@ -1,11 +1,10 @@
 # Contrato de la API
 
-> **Actualizado el 28 de octubre** con lo que hace de verdad la API que programó Argail (versión del 25/10). Es la referencia para la interfaz (T5) y las pruebas (T6). Cualquier cambio se habla con el jefe.
+> **Actualizado el 28 de octubre** con lo que hace de verdad la API que programó Argail (versión del 28/10, con las correcciones). Es la referencia para la interfaz (T5) y las pruebas (T6). Cualquier cambio se habla con el jefe.
 
 Un **contrato** es el acuerdo sobre qué se envía y qué se recibe exactamente. Sirve para que varias personas programen piezas que tienen que encajar.
 
-- 📌 = lo exige el enunciado.
-- ⏳ = pendiente de arreglar antes del **jueves 29 por la noche**.
+📌 = lo exige el enunciado.
 
 ---
 
@@ -90,7 +89,7 @@ Forma de la respuesta (los `<...>` se sustituyen por valores reales; esto **no**
 | IP no válida en `lista_blanca` | 422 | Lista de textos |
 | Ninguna línea reconocible | 422 | Texto |
 | Falta el modelo | 503 | Texto |
-| ⏳ Línea "casi válida" (mes que no existe, hora 25, IP mal formada) | Hoy da **500**. Tras el arreglo, se contará como ignorada | — |
+| Línea "casi válida" (mes que no existe, hora 25, fecha imposible, IP mal formada) | 200: la línea se cuenta en `lineas_ignoradas`. Si todas las líneas son así, 422 | — |
 
 **La interfaz tiene que saber mostrar las dos formas de `detail`** (comprobado):
 
@@ -104,8 +103,7 @@ Forma de la respuesta (los `<...>` se sustituyen por valores reales; esto **no**
 Como `logtools.py` **no se modifica**, la API tiene que protegerse antes de llamarlo:
 
 1. **Log sin ninguna línea válida.** `construir_features` falla con una tabla vacía. Resuelto: la API lo comprueba antes y devuelve 422.
-2. ⏳ **Líneas "casi válidas".** Con un mes que no existe (`Foo  7 10:15:32 ...`), una hora `25:15:32`, un día `Feb 31` o una IP mal formada (`from 999.1.1 port ...`), `logtools.py` lanza una excepción en vez de ignorar la línea, y la API responde 500.
-   **Arreglo (Argail):** antes de llamar a `cargar_lineas`, recorrer las líneas y probar cada una con `parsear_linea` (de `logtools`) y con `ipaddress.ip_address` sobre su IP, dentro de un `try/except (KeyError, ValueError)`. Las que fallen se cuentan como ignoradas y no se pasan a `cargar_lineas`. Probado en una copia: funciona y tarda unos 0,1 segundos más con un log completo. Para probarlo: `pruebas/peticiones/extra_linea_casi_valida.json`.
+2. **Líneas "casi válidas".** Con un mes que no existe (`Foo  7 10:15:32 ...`), una hora `25:15:32`, un día `Feb 31` o una IP mal formada (`from 999.1.1 port ...`), `logtools.py` lanza una excepción en vez de ignorar la línea. Resuelto el 28/10: antes de llamar a `cargar_lineas`, la API prueba cada línea con `parsear_linea` (de `logtools`) y con `ipaddress.ip_address` sobre su IP, dentro de un `try/except`; las que fallan se cuentan como ignoradas. Para probarlo: `pruebas/peticiones/extra_linea_casi_valida.json`.
 3. **Orden de las columnas.** El modelo espera las características en el mismo orden que en el entrenamiento. Resuelto: la API las ordena con `modelo.feature_names_in_`.
 4. **`n_inv` cuenta líneas, no intentos.** Cada intento con un usuario inexistente genera dos líneas (`Invalid user ...` y `Failed password for invalid user ...`). Resuelto en `motivos.py`, que divide entre 2.
 
@@ -121,28 +119,20 @@ La API llama a `explicar_motivo(fila)`, donde `fila` es la fila de la IP en la t
 | `n_inv` ≥ 1 | "presenta usuarios inexistentes (aproximadamente N intentos)", con N = `n_inv` / 2 |
 | `max_fallos_5min` ≥ 5 | "N fallos en 5 minutos" |
 | `n_ok` ≥ 1 y `n_fallos` ≥ 3 | "consigue entrar después de N fallos" |
+| `n_usuarios` = 1, `n_fallos` ≥ 5 y `n_ok` = 0 | "N fallos de contraseña contra el mismo usuario" |
 | Ninguna de las anteriores | "comportamiento parecido a los ataques vistos en el entrenamiento" |
 
 Si se cumplen varias, se juntan separadas por "; ".
 
-- ⏳ **Jorge:** añadir una regla para los ataques lentos contra un solo usuario (`n_usuarios` = 1, muchos fallos y ningún acceso correcto), que ahora salen con el motivo genérico.
-- ⏳ **Argail:** quitar de `main.py` el motivo de reserva (`_explicar_motivo` con reglas propias). Ya se usa el de Jorge, y la rúbrica pide código sin duplicar.
+`main.py` importa `explicar_motivo` directamente: ya no hay un motivo de reserva duplicado.
 
 ---
 
 ## CORS: que la página web pueda llamar a la API
 
-Si la página se abre con doble clic (`file://...`) o desde otro puerto (por ejemplo, Live Server), el navegador **bloquea** las llamadas a la API por seguridad. Ahora mismo pasa: la petición previa del navegador recibe un 405.
+Si la página se abre con doble clic (`file://...`) o desde otro puerto (por ejemplo, Live Server), el navegador **bloquea** las llamadas a otra dirección salvo que la API lo permita (CORS).
 
-⏳ **Decisión: Argail activa `CORSMiddleware`** en `main.py`, fuera de cualquier función. Lo más claro es ponerlo justo después de crear `app = FastAPI(...)`. Si se intentara añadir con la API ya en marcha (por ejemplo, dentro de una ruta), daría error.
-
-```python
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-```
-
-Probado en una copia: con esto, una página abierta con doble clic o desde otro puerto puede llamar a `/analizar`, y también recibe el detalle de los errores 422. Antes de poner la API en Internet, `allow_origins` debería limitarse a la dirección de la interfaz (pregunta 8 de la defensa).
+Resuelto el 28/10: `main.py` activa `CORSMiddleware` con `allow_origins=["*"]` justo después de crear `app`. Comprobado: una página abierta con doble clic o desde otro puerto puede llamar a `/analizar`, y también recibe el detalle de los errores 422. Antes de poner la API en Internet, `allow_origins` debería limitarse a la dirección de la interfaz (pregunta 8 de la defensa).
 
 ---
 
