@@ -1,3 +1,4 @@
+
 def explicar_motivo(fila):
     """Devuelve un motivo en lenguaje humano para una IP sospechosa."""
 
@@ -28,6 +29,17 @@ def explicar_motivo(fila):
         motivos.append(
             f"consigue entrar después de "
             f"{int(fila['n_fallos'])} fallos"
+        )
+
+    # Detectamos ataques lentos contra un solo usuario.
+    if (
+        fila["n_usuarios"] == 1
+        and fila["n_fallos"] >= 5
+        and fila["n_ok"] == 0
+    ):
+        motivos.append(
+            f"{int(fila['n_fallos'])} fallos de contraseña "
+            f"contra el mismo usuario"
         )
 
     # Si no se cumple ninguna regla, usamos el motivo general.
