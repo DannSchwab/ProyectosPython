@@ -13,13 +13,14 @@ from pathlib import Path
 from typing import Any
 
 import joblib
-import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from logtools import cargar_lineas, construir_features
+from logtools import cargar_lineas, construir_features, parsear_linea
+from api.motivos import explicar_motivo
 
 # Se espera ejecutar Uvicorn desde Proyecto2/, tal como define el README del grupo.
 RUTA_MODELO = Path(os.environ.get("MODELO_PATH", "modelo.joblib"))
@@ -28,6 +29,15 @@ app = FastAPI(
     title="Detector de intrusiones SSH",
     description="Analiza líneas de auth.log y devuelve IPs potencialmente sospechosas. No bloquea conexiones.",
     version="1.0.0",
+)
+
+# CORS permite que la interfaz web local pueda llamar a la API.
+# Antes de desplegar en Internet, restringir allow_origins al origen real de la interfaz.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # La carga se hace una sola vez, al arrancar/importar la aplicación.
@@ -88,36 +98,7 @@ async def error_validacion(request, exc: RequestValidationError):
 
 def _comprobar_modelo() -> None:
     if modelo is None:
-        from fastapi import HTTPException
         raise HTTPException(status_code=503, detail=_error_carga_modelo)
-
-
-def _explicar_motivo(fila: pd.Series) -> str:
-    """Usa el módulo de motivos de T6 cuando esté disponible.
-
-    El fallback permite desarrollar/probar la API antes de que Jorge incorpore
-    api/motivos.py. En la integración final se utilizará explicar_motivo(fila).
-    """
-    try:
-        from api.motivos import explicar_motivo
-        motivo = explicar_motivo(fila)
-        if isinstance(motivo, str) and motivo.strip():
-            return motivo
-    except (ImportError, AttributeError):
-        pass
-
-    razones = []
-    if int(fila.get("n_fallos", 0)) >= 5:
-        razones.append(f"{int(fila['n_fallos'])} fallos de contraseña")
-    if int(fila.get("n_usuarios", 0)) >= 5:
-        razones.append(f"pruebas con {int(fila['n_usuarios'])} usuarios distintos")
-    if int(fila.get("n_inv", 0)) >= 3:
-        razones.append(f"{int(fila['n_inv'])} intentos con usuarios inválidos")
-    if int(fila.get("max_fallos_5min", 0)) >= 5:
-        razones.append(f"{int(fila['max_fallos_5min'])} fallos en una ventana de cinco minutos")
-    if not razones:
-        razones.append("el modelo ha estimado un riesgo elevado a partir del patrón de actividad")
-    return "; ".join(razones)
 
 
 @app.get("/salud")
@@ -138,9 +119,24 @@ def analizar(peticion: PeticionAnalizar) -> dict[str, Any]:
     """Analiza líneas de log agrupándolas por IP; no ejecuta bloqueos."""
     _comprobar_modelo()
 
-    eventos, ignoradas = cargar_lineas(peticion.lineas)
+    # logtools.parsear_linea puede lanzar KeyError/ValueError para líneas
+    # casi válidas (mes, fecha u hora incorrectos). Filtrarlas aquí evita 500.
+    lineas_validas = []
+    ignoradas_previas = 0
+    for linea in peticion.lineas:
+        try:
+            evento = parsear_linea(linea.rstrip("\n"))
+            if evento is None:
+                ignoradas_previas += 1
+                continue
+            ipaddress.ip_address(evento["ip"])
+            lineas_validas.append(linea)
+        except (KeyError, ValueError):
+            ignoradas_previas += 1
+
+    eventos, ignoradas_logtools = cargar_lineas(lineas_validas)
+    ignoradas = ignoradas_previas + ignoradas_logtools
     if eventos.empty:
-        from fastapi import HTTPException
         raise HTTPException(
             status_code=422,
             detail="No se ha reconocido ninguna línea válida de auth.log. Comprueba el formato del log.",
@@ -158,7 +154,6 @@ def analizar(peticion: PeticionAnalizar) -> dict[str, Any]:
         if esperadas:
             faltantes = [col for col in esperadas if col not in X.columns]
             if faltantes:
-                from fastapi import HTTPException
                 raise HTTPException(
                     status_code=500,
                     detail=f"Las características calculadas no coinciden con el modelo; faltan: {faltantes}.",
@@ -170,7 +165,6 @@ def analizar(peticion: PeticionAnalizar) -> dict[str, Any]:
         try:
             indice_atacante = clases.index(1)
         except ValueError:
-            from fastapi import HTTPException
             raise HTTPException(
                 status_code=500,
                 detail="El modelo cargado no tiene una clase positiva (1) para identificar atacantes.",
@@ -183,9 +177,10 @@ def analizar(peticion: PeticionAnalizar) -> dict[str, Any]:
                 sospechosas.append({
                     "ip": str(ip),
                     "probabilidad": round(probabilidad, 4),
-                    "motivo": _explicar_motivo(fila),
+                    "motivo": explicar_motivo(fila),
                 })
 
+    sospechosas.sort(key=lambda resultado: resultado["ip"])
     return {
         "lineas_ignoradas": int(ignoradas),
         "ips_analizadas": len(ips_analizadas),
