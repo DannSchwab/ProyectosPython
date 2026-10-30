@@ -69,7 +69,7 @@ Respuesta obtenida:
 }
 ```
 
-**Conclusión:** la petición se procesa sin errores y la respuesta no incluye IP sospechosas. Queda pendiente contrastar con el contrato del proyecto si las IP incluidas en la lista blanca deben contabilizarse dentro de `ips_analizadas`.
+**Conclusión:** la petición se procesa sin errores y la respuesta no incluye ninguna IP sospechosa. Según el contrato del proyecto, las IP incluidas en la lista blanca no se contabilizan dentro de `ips_analizadas`. Por tanto, el resultado obtenido de dos IP analizadas es correcto.
 
 ### Prueba 3. Umbral fuera de rango
 
@@ -190,6 +190,10 @@ La función `explicar_motivo()` complementa la predicción con razones comprensi
 
 ## 8. Pregunta de defensa
 
-**¿Qué pasaría si el director bloquea una IP por error?**
+**Si el detector bloquea por error la IP del director, ¿qué ha fallado y cómo lo evitarías?**
 
-El sistema podría dejar sin servicio a un usuario legítimo. El modelo puede producir falsos positivos, por lo que no conviene bloquear automáticamente una IP solo porque aparezca como sospechosa. La API debe servir como apoyo para la decisión: una persona responsable revisa la probabilidad, los motivos y los registros antes de actuar. También conviene registrar las decisiones y disponer de un procedimiento para retirar el bloqueo si se confirma que fue un error.
+Se ha producido un **falso positivo**, es decir, el detector ha identificado como sospechosa una IP que realmente es legítima. Esto puede ocurrir cuando el modelo interpreta incorrectamente el comportamiento de una dirección IP.
+
+Para evitarlo, utilizaríamos la **lista blanca**, que existe precisamente para excluir del análisis de detección las direcciones IP de confianza, como la del director. De esta manera, aunque esa IP presente algún comportamiento que pueda parecer sospechoso, no se marcaría como atacante.
+
+Además, el sistema debería utilizarse como herramienta de apoyo y no bloquear automáticamente las direcciones IP. Antes de aplicar un bloqueo, una persona responsable tendría que revisar la alerta, la probabilidad y los motivos proporcionados por el detector.
