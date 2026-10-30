@@ -1,0 +1,225 @@
+:root {
+    --fondo: #eef1f5;
+    --tarjeta: #ffffff;
+    --texto: #1f2933;
+    --texto-suave: #52606d;
+    --acento: #0b5cad;
+    --acento-oscuro: #084a8c;
+    --borde: #c5ccd6;
+    --error-fondo: #fde8e8;
+    --error-borde: #e5a3a3;
+    --error-texto: #7a1f1f;
+    --ok-fondo: #e8f3ee;
+    --ok-borde: #a8d0bb;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--fondo);
+    color: var(--texto);
+}
+
+main {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--tarjeta);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin: 0 0 10px;
+}
+
+.intro {
+    text-align: center;
+    color: var(--texto-suave);
+    margin: 0 0 25px;
+}
+
+form > div {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #3e4c59;
+}
+
+textarea,
+input[type="text"],
+input[type="number"],
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borde);
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #fff;
+}
+
+textarea {
+    resize: vertical;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.9rem;
+}
+
+button[type="submit"] {
+    background-color: var(--acento);
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--acento-oscuro);
+}
+
+button[type="submit"]:disabled {
+    background-color: #8a97a6;
+    cursor: wait;
+}
+
+:focus-visible {
+    outline: 3px solid #f0b429;
+    outline-offset: 2px;
+}
+
+#errores {
+    margin-top: 20px;
+    background-color: var(--error-fondo);
+    color: var(--error-texto);
+    padding: 12px;
+    border: 1px solid var(--error-borde);
+    border-radius: 4px;
+}
+
+#errores pre {
+    margin: 6px 0 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: inherit;
+}
+
+#resultados {
+    margin-top: 20px;
+    background-color: var(--ok-fondo);
+    padding: 12px;
+    border: 1px solid var(--ok-borde);
+    border-radius: 4px;
+}
+
+#resultados h3,
+#resultados h4 {
+    margin: 0 0 8px;
+}
+
+#resultados h4 {
+    margin-top: 14px;
+}
+
+#resultados p {
+    margin: 4px 0;
+}
+
+.tabla-scroll {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+th,
+td {
+    padding: 8px;
+    border: 1px solid var(--borde);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: #f2f4f7;
+}
+
+td.prob {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    main {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Tabla de resultados: cada IP pasa a ser una tarjeta, sin scroll lateral */
+    .tabla-scroll {
+        overflow-x: visible;
+    }
+
+    table,
+    tbody,
+    tr,
+    td {
+        display: block;
+        width: 100%;
+    }
+
+    /* La cabecera se oculta de forma visual, pero sigue disponible para lectores de pantalla */
+    thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+    }
+
+    tr {
+        margin-bottom: 10px;
+        padding: 4px 0;
+        background: #fff;
+        border: 1px solid var(--borde);
+        border-radius: 6px;
+    }
+
+    td {
+        border: none;
+        padding: 6px 10px;
+    }
+
+    td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: var(--texto-suave);
+    }
+}
