@@ -165,8 +165,6 @@ Interfaz web: muestra la tabla o el error; la decisión la toma una persona
 
 Las mismas peticiones se pueden enviar con Postman (colección `P2_detector.postman_collection.json`) o desde la documentación interactiva de FastAPI en `/docs`, que es como se han hecho estas pruebas. La API nunca bloquea una IP: solo informa.
 
-La API permite enviar una petición mediante Postman o desde la documentación interactiva de FastAPI en `/docs`. Tras validar la entrada, procesa las líneas del log, extrae características, utiliza el modelo entrenado y devuelve los resultados en JSON.
-
 ## 6. Colección de Postman y evidencias
 
 Para facilitar la repetición de las pruebas, se ha creado y exportado desde Postman una colección llamada `P2_detector.postman_collection.json`.
@@ -197,9 +195,8 @@ La función `explicar_motivo()` complementa la predicción con razones comprensi
 
 **Si el detector bloquea por error la IP del director, ¿qué ha fallado y cómo lo evitarías?**
 
-Con nuestros datos se ve este tipo de error: en el experimento E1, con un umbral de 0,1 el modelo marca como sospechosa 1 IP legítima. Además, la IP 192.168.1.249, un script de monitorización mal configurado, acumula 37 fallos de contraseña y parece un ataque aunque sea legítima. Al director le podría pasar algo parecido si se equivoca varias veces de contraseña o se conecta desde una red nueva.
+Se ha producido un **falso positivo**, es decir, el detector ha identificado como sospechosa una IP que realmente es legítima. Esto puede ocurrir cuando el modelo interpreta incorrectamente el comportamiento de una dirección IP. Con nuestros datos se ve este tipo de error: en el experimento E1, con un umbral de 0,1 el modelo marca como sospechosa 1 IP legítima. Además, la IP 192.168.1.249, un script de monitorización mal configurado, acumula 37 fallos de contraseña y parece un ataque aunque sea legítima. Al director le podría pasar algo parecido si se equivoca varias veces de contraseña o se conecta desde una red nueva.
 
-Se ha producido un **falso positivo**, es decir, el detector ha identificado como sospechosa una IP que realmente es legítima. Esto puede ocurrir cuando el modelo interpreta incorrectamente el comportamiento de una dirección IP.
 
 Para evitarlo, utilizaríamos la **lista blanca**, que existe precisamente para excluir del análisis de detección las direcciones IP de confianza, como la del director. De esta manera, aunque esa IP presente algún comportamiento que pueda parecer sospechoso, no se marcaría como atacante.
 
