@@ -84,7 +84,7 @@ Todo texto que viene del log o de la API se escapa antes de insertarlo en la pá
 **Pregunta 7: datos personales en los logs**
 
 
-En los logs pueden aparecer las direcciones IP de origen (que se consideran datos personales porque pueden identificar a una persona) y puertos desde el cual el cliente inicia la conexión, y en el log hay nombres de empleados.
+En los logs pueden aparecer las direcciones IP de origen (que se consideran datos personales porque pueden identificar a una persona) y puertos desde los que el cliente inicia la conexión, y en el log hay nombres de empleados.
 A su vez, también podemos encontrar nombres de usuario que se han introducido al intentar iniciar sesión (incluyendo el caso de la contraseña escrita por error en el campo del usuario), y marcas de tiempo que indican cuándo se ha iniciado la conexión y cuándo ha terminado.
 
 Por otro lado, tener acceso a estos datos incluye responsabilidad y obligaciones a la hora de tratar con ellos.
@@ -102,7 +102,7 @@ Entre estas obligaciones se encuentran las siguientes:
 
 - Informar a los usuarios de las políticas de privacidad.
 
-Por último, cabe recalcar que nuestra API no bloquea ninguna IP, simplemente informa, lo que corresponde al cumplimiento del
+Por último, cabe recalcar que nuestra API no bloquea ninguna IP, simplemente informa, lo que va en la línea del
 artículo 22 del RGPD que da derecho a cualquier persona a no ser objeto de decisiones tomadas únicamente por una máquina que puedan afectarle
 de manera considerable.
 
