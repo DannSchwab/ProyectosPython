@@ -1,66 +1,173 @@
 # Documento de pruebas de la API
 
-**T6 Pruebas y motivos** · Autor: Jorge
+**Proyecto:** Detector de intrusiones con IA  
+**Responsable de las pruebas:** Jorge Martín Trejo  
+**Servicio probado:** API de análisis de logs  
+**Dirección local:** `http://127.0.0.1:8000`
 
-> Enunciado: documentar, con capturas o con la salida de `curl`, Postman o la página `/docs`, **al menos cuatro peticiones**: una correcta, una con lista blanca, una con umbral fuera de rango y una con líneas basura. Indicar **qué esperabas y qué obtuviste**.
+## 1. Objetivo
 
-**Cómo trabajar sin esperar a la API:** rellena ya la columna "Esperado" a partir de [`../docs/CONTRATO_API.md`](../docs/CONTRATO_API.md) y súbelo. Cuando la API funcione (viernes 23), ejecuta cada petición y rellena "Obtenido".
+Comprobar que la API procesa correctamente las peticiones válidas, aplica las validaciones de entrada y gestiona las líneas de log que no cumplen el formato esperado.
 
-**Con Postman:**
-- Crea una colección `P2_detector` con una petición por fila de la tabla. En cada una, el cuerpo es el contenido del `.json` correspondiente de `peticiones/` (Body → raw → JSON).
-- Usa una variable `base_url` = `http://127.0.0.1:8000` para no repetir la dirección.
-- Si sabes, añade a cada petición un test que compruebe el código esperado (200 o 422), así Postman avisa solo si algo cambia.
-- Exporta la colección como `P2_detector.postman_collection.json` y súbela a esta carpeta. Las capturas de Postman sirven como "Obtenido".
+Las pruebas se han ejecutado con la API iniciada localmente mediante:
 
-## Resumen
+```powershell
+python -m uvicorn api.main:app --reload
+```
 
-| # | Petición | Fichero | Código esperado | Código obtenido | ¿Coincide? |
+## 2. Resumen de resultados
+
+| # | Prueba | Fichero de petición | Código esperado | Código obtenido | ¿Coincide? |
 |---|---|---|---|---|---|
-| 1 | Correcta | `peticiones/correcta.json` | 200 | | |
-| 2 | Con lista blanca (`203.0.113.45`) | `peticiones/lista_blanca.json` | 200 | | |
-| 3 | Umbral fuera de rango (1.5) | `peticiones/umbral_fuera_rango.json` | 422 | | |
-| 4 | Líneas basura | `peticiones/lineas_basura.json` | 422 | | |
-| 5 | *(extra)* Línea con un mes que no existe | `peticiones/extra_linea_casi_valida.json` | *(decidir con T4: 200 contándola como ignorada, o 422)* | | |
+| 1 | Petición correcta | `peticiones/correcta.json` | 200 | 200 | Sí |
+| 2 | Petición con lista blanca (`203.0.113.45`) | `peticiones/lista_blanca.json` | 200 | 200 | Sí |
+| 3 | Umbral fuera de rango (`1.5`) | `peticiones/umbral_fuera_rango.json` | 422 | 422 | Sí |
+| 4 | Líneas basura, sin ninguna línea válida | `peticiones/lineas_basura.json` | 422 | 422 | Sí |
+| 5 | Línea con un mes que no existe | `peticiones/extra_linea_casi_valida.json` | 200 | 200 | Sí |
 
-## Detalle de cada prueba
+## 3. Detalle de las pruebas
 
-Todos los comandos se ejecutan desde la carpeta `Proyecto2/` (en Windows, `curl.exe`).
+### Prueba 1. Petición correcta
 
-### 1. Petición correcta
+- **Fichero:** `peticiones/correcta.json`
+- **Resultado esperado:** HTTP 200 y respuesta JSON con el resultado del análisis.
+- **Resultado obtenido:** HTTP 200.
 
-- **Comando:** `curl -X POST http://127.0.0.1:8000/analizar -H "Content-Type: application/json" -d @pruebas/peticiones/correcta.json`
-- **Esperado:**
-- **Obtenido:** *(pegar la salida o la captura)*
-- **Conclusión:**
+Respuesta obtenida:
 
-### 2. Con lista blanca
+```json
+{
+  "lineas_ignoradas": 0,
+  "ips_analizadas": 3,
+  "sospechosas": [
+    {
+      "ip": "203.0.113.45",
+      "probabilidad": 0.93,
+      "motivo": "prueba 8 usuarios distintos; presenta usuarios inexistentes (aproximadamente 8 intentos); 8 fallos en 5 minutos"
+    }
+  ]
+}
+```
 
-- **Esperado:**
-- **Obtenido:**
-- **Conclusión:**
+**Conclusión:** la petición se procesa correctamente. La API analiza tres IP, no ignora líneas y devuelve una IP sospechosa con su probabilidad y una explicación legible.
 
-### 3. Umbral fuera de rango
+### Prueba 2. Petición con lista blanca
 
-- **Esperado:**
-- **Obtenido:**
-- **Conclusión:**
+- **Fichero:** `peticiones/lista_blanca.json`
+- **Resultado esperado:** HTTP 200 y ninguna IP de la lista blanca marcada como sospechosa.
+- **Resultado obtenido:** HTTP 200.
 
-### 4. Líneas basura
+Respuesta obtenida:
 
-- **Esperado:**
-- **Obtenido:**
-- **Conclusión:**
+```json
+{
+  "lineas_ignoradas": 0,
+  "ips_analizadas": 2,
+  "sospechosas": []
+}
+```
 
----
+**Conclusión:** la petición se procesa sin errores y la respuesta no incluye IP sospechosas. Queda pendiente contrastar con el contrato del proyecto si las IP incluidas en la lista blanca deben contabilizarse dentro de `ips_analizadas`.
 
-## Cómo funciona `explicar_motivo` (`api/motivos.py`)
+### Prueba 3. Umbral fuera de rango
 
-*Explica con tus palabras qué reglas usa y por qué.*
+- **Fichero:** `peticiones/umbral_fuera_rango.json`
+- **Dato probado:** `umbral = 1.5`
+- **Resultado esperado:** HTTP 422, porque el umbral supera el máximo permitido.
+- **Resultado obtenido:** HTTP 422.
 
-## Para el informe: 5. Esquema de la integración
+Mensaje devuelto:
 
-*Qué piezas hay (interfaz, API, `logtools.py`, modelo) y cómo se comunican. Se puede dibujar con Mermaid.*
+```json
+{
+  "detail": [
+    "body → umbral: Input should be less than or equal to 1"
+  ]
+}
+```
 
-## Para la defensa
+**Conclusión:** la API rechaza el valor no válido y comunica que el umbral debe ser menor o igual que `1`.
 
-### Pregunta 1. Si el detector bloquea por error la dirección del director, ¿qué ha fallado y cómo lo evitarías?
+### Prueba 4. Líneas basura
+
+- **Fichero:** `peticiones/lineas_basura.json`
+- **Resultado esperado:** HTTP 422 si no se reconoce ninguna línea válida del formato de `auth.log`.
+- **Resultado obtenido:** HTTP 422.
+
+Mensaje devuelto:
+
+```json
+{
+  "detail": "No se ha reconocido ninguna línea válida de auth.log. Comprueba el formato del log."
+}
+```
+
+**Conclusión:** la API rechaza la petición cuando no puede reconocer ninguna línea válida y devuelve un mensaje de error.
+
+### Prueba 5. Línea con un mes que no existe
+
+- **Fichero:** `peticiones/extra_linea_casi_valida.json`
+- **Resultado esperado:** procesar la petición sin provocar un error interno; la línea no válida debe ignorarse si el comportamiento acordado con el equipo es continuar con las líneas válidas.
+- **Resultado obtenido:** HTTP 200.
+
+Respuesta obtenida:
+
+```json
+{
+  "lineas_ignoradas": 1,
+  "ips_analizadas": 1,
+  "sospechosas": []
+}
+```
+
+**Conclusión:** la API ignora una línea no válida y termina el análisis sin devolver HTTP 500. La petición se procesa correctamente.
+
+## 4. Comprobación de `explicar_motivo()`
+
+La función `explicar_motivo(fila)`, implementada en `api/motivos.py`, construye una explicación en lenguaje natural a partir de las características de cada IP.
+
+- Si hay tres o más usuarios distintos, indica cuántos usuarios se han probado.
+- Si `n_inv` es mayor o igual que uno, informa de los usuarios inexistentes y estima los intentos mediante `n_inv / 2`, ya que este contador representa eventos y no necesariamente intentos independientes.
+- Si hay cinco o más fallos en una ventana de cinco minutos, indica el número de fallos.
+- Si se produce al menos un acceso correcto y hay tres o más fallos, indica que se consigue entrar después de varios fallos.
+- Si se producen cinco o más fallos contra un solo usuario y no hay accesos correctos, identifica el patrón de fallos contra el mismo usuario.
+- Si no se cumple ninguna regla, utiliza un motivo general relacionado con el comportamiento observado durante el entrenamiento.
+
+En la prueba correcta, la API devuelve una explicación que combina varios de estos indicadores.
+
+## 5. Esquema de la integración
+
+El flujo de la aplicación es el siguiente:
+
+```text
+Postman o cliente HTTP
+        |
+        v
+API (FastAPI): recibe y valida el JSON
+        |
+        v
+Procesamiento de logs y extracción de características
+        |
+        v
+Modelo de IA (modelo.joblib): estima el comportamiento sospechoso
+        |
+        v
+explicar_motivo(): genera una explicación legible
+        |
+        v
+Respuesta JSON: líneas ignoradas, IP analizadas e IP sospechosas
+```
+
+La API permite enviar una petición mediante Postman o desde la documentación interactiva de FastAPI en `/docs`. Tras validar la entrada, procesa las líneas del log, extrae características, utiliza el modelo entrenado y devuelve los resultados en JSON.
+
+## 6. Conclusión
+
+Las cinco pruebas realizadas han obtenido los códigos HTTP esperados. La API acepta las peticiones válidas, rechaza el umbral fuera de rango y las entradas que no contienen ninguna línea reconocible, y puede ignorar una línea no válida sin provocar un error interno.
+
+La función `explicar_motivo()` complementa la predicción con razones comprensibles para que una persona pueda revisar el resultado. El detector debe utilizarse como herramienta de apoyo: una IP no debería bloquearse automáticamente solo por la predicción del modelo. Antes de tomar una medida, una persona responsable debe revisar la probabilidad, los motivos y los registros disponibles para reducir el riesgo de falsos positivos.
+
+## 7. Pregunta de defensa
+
+**¿Qué pasaría si el director bloquea una IP por error?**
+
+El sistema podría dejar sin servicio a un usuario legítimo. El modelo puede producir falsos positivos, por lo que no conviene bloquear automáticamente una IP solo porque aparezca como sospechosa. La API debe servir como apoyo para la decisión: una persona responsable revisa la probabilidad, los motivos y los registros antes de actuar. También conviene registrar las decisiones y disponer de un procedimiento para retirar el bloqueo si se confirma que fue un error.
