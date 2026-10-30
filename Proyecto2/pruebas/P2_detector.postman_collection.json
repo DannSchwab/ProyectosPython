@@ -1,0 +1,166 @@
+{
+  "info": {
+    "_postman_id": "6c53283b-1b26-4d48-8481-1d420491166b",
+    "name": "P2_detector",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55273383",
+    "_collection_link": "https://go.postman.co/collection/55273383-6c53283b-1b26-4d48-8481-1d420491166b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01 - Petición correcta",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"lineas\": [\r\n    \"Oct  7 09:02:11 srv-web01 sshd[1840]: Failed password for ana from 192.168.1.20 port 40112 ssh2\",\r\n    \"Oct  7 09:02:19 srv-web01 sshd[1841]: Accepted password for ana from 192.168.1.20 port 40113 ssh2\",\r\n    \"Oct  7 10:15:30 srv-web01 sshd[2101]: Invalid user admin from 203.0.113.45 port 51234\",\r\n    \"Oct  7 10:15:30 srv-web01 sshd[2101]: Failed password for invalid user admin from 203.0.113.45 port 51234 ssh2\",\r\n    \"Oct  7 10:15:31 srv-web01 sshd[2102]: Invalid user test from 203.0.113.45 port 51235\",\r\n    \"Oct  7 10:15:31 srv-web01 sshd[2102]: Failed password for invalid user test from 203.0.113.45 port 51235 ssh2\",\r\n    \"Oct  7 10:15:32 srv-web01 sshd[2103]: Invalid user oracle from 203.0.113.45 port 51236\",\r\n    \"Oct  7 10:15:32 srv-web01 sshd[2103]: Failed password for invalid user oracle from 203.0.113.45 port 51236 ssh2\",\r\n    \"Oct  7 10:15:33 srv-web01 sshd[2104]: Invalid user ubuntu from 203.0.113.45 port 51237\",\r\n    \"Oct  7 10:15:33 srv-web01 sshd[2104]: Failed password for invalid user ubuntu from 203.0.113.45 port 51237 ssh2\",\r\n    \"Oct  7 10:15:34 srv-web01 sshd[2105]: Invalid user postgres from 203.0.113.45 port 51238\",\r\n    \"Oct  7 10:15:34 srv-web01 sshd[2105]: Failed password for invalid user postgres from 203.0.113.45 port 51238 ssh2\",\r\n    \"Oct  7 10:15:35 srv-web01 sshd[2106]: Invalid user guest from 203.0.113.45 port 51239\",\r\n    \"Oct  7 10:15:35 srv-web01 sshd[2106]: Failed password for invalid user guest from 203.0.113.45 port 51239 ssh2\",\r\n    \"Oct  7 10:15:36 srv-web01 sshd[2107]: Invalid user pi from 203.0.113.45 port 51240\",\r\n    \"Oct  7 10:15:36 srv-web01 sshd[2107]: Failed password for invalid user pi from 203.0.113.45 port 51240 ssh2\",\r\n    \"Oct  7 10:15:37 srv-web01 sshd[2108]: Invalid user mysql from 203.0.113.45 port 51241\",\r\n    \"Oct  7 10:15:37 srv-web01 sshd[2108]: Failed password for invalid user mysql from 203.0.113.45 port 51241 ssh2\",\r\n    \"Oct  7 11:47:03 srv-web01 sshd[3307]: Accepted password for luis from 198.51.100.7 port 45501 ssh2\"\r\n  ],\r\n  \"umbral\": 0.7,\r\n  \"lista_blanca\": []\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/analizar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "analizar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Lista blanca",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"lineas\": [\r\n    \"Oct  7 09:02:11 srv-web01 sshd[1840]: Failed password for ana from 192.168.1.20 port 40112 ssh2\",\r\n    \"Oct  7 09:02:19 srv-web01 sshd[1841]: Accepted password for ana from 192.168.1.20 port 40113 ssh2\",\r\n    \"Oct  7 10:15:30 srv-web01 sshd[2101]: Invalid user admin from 203.0.113.45 port 51234\",\r\n    \"Oct  7 10:15:30 srv-web01 sshd[2101]: Failed password for invalid user admin from 203.0.113.45 port 51234 ssh2\",\r\n    \"Oct  7 10:15:31 srv-web01 sshd[2102]: Invalid user test from 203.0.113.45 port 51235\",\r\n    \"Oct  7 10:15:31 srv-web01 sshd[2102]: Failed password for invalid user test from 203.0.113.45 port 51235 ssh2\",\r\n    \"Oct  7 10:15:32 srv-web01 sshd[2103]: Invalid user oracle from 203.0.113.45 port 51236\",\r\n    \"Oct  7 10:15:32 srv-web01 sshd[2103]: Failed password for invalid user oracle from 203.0.113.45 port 51236 ssh2\",\r\n    \"Oct  7 10:15:33 srv-web01 sshd[2104]: Invalid user ubuntu from 203.0.113.45 port 51237\",\r\n    \"Oct  7 10:15:33 srv-web01 sshd[2104]: Failed password for invalid user ubuntu from 203.0.113.45 port 51237 ssh2\",\r\n    \"Oct  7 10:15:34 srv-web01 sshd[2105]: Invalid user postgres from 203.0.113.45 port 51238\",\r\n    \"Oct  7 10:15:34 srv-web01 sshd[2105]: Failed password for invalid user postgres from 203.0.113.45 port 51238 ssh2\",\r\n    \"Oct  7 10:15:35 srv-web01 sshd[2106]: Invalid user guest from 203.0.113.45 port 51239\",\r\n    \"Oct  7 10:15:35 srv-web01 sshd[2106]: Failed password for invalid user guest from 203.0.113.45 port 51239 ssh2\",\r\n    \"Oct  7 10:15:36 srv-web01 sshd[2107]: Invalid user pi from 203.0.113.45 port 51240\",\r\n    \"Oct  7 10:15:36 srv-web01 sshd[2107]: Failed password for invalid user pi from 203.0.113.45 port 51240 ssh2\",\r\n    \"Oct  7 10:15:37 srv-web01 sshd[2108]: Invalid user mysql from 203.0.113.45 port 51241\",\r\n    \"Oct  7 10:15:37 srv-web01 sshd[2108]: Failed password for invalid user mysql from 203.0.113.45 port 51241 ssh2\",\r\n    \"Oct  7 11:47:03 srv-web01 sshd[3307]: Accepted password for luis from 198.51.100.7 port 45501 ssh2\"\r\n  ],\r\n  \"umbral\": 0.7,\r\n  \"lista_blanca\": [\r\n    \"203.0.113.45\"\r\n  ]\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/analizar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "analizar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Umbral fuera de rango",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"lineas\": [\r\n    \"Oct  7 09:02:11 srv-web01 sshd[1840]: Failed password for ana from 192.168.1.20 port 40112 ssh2\",\r\n    \"Oct  7 09:02:19 srv-web01 sshd[1841]: Accepted password for ana from 192.168.1.20 port 40113 ssh2\",\r\n    \"Oct  7 10:15:30 srv-web01 sshd[2101]: Invalid user admin from 203.0.113.45 port 51234\",\r\n    \"Oct  7 10:15:30 srv-web01 sshd[2101]: Failed password for invalid user admin from 203.0.113.45 port 51234 ssh2\",\r\n    \"Oct  7 10:15:31 srv-web01 sshd[2102]: Invalid user test from 203.0.113.45 port 51235\",\r\n    \"Oct  7 10:15:31 srv-web01 sshd[2102]: Failed password for invalid user test from 203.0.113.45 port 51235 ssh2\",\r\n    \"Oct  7 10:15:32 srv-web01 sshd[2103]: Invalid user oracle from 203.0.113.45 port 51236\",\r\n    \"Oct  7 10:15:32 srv-web01 sshd[2103]: Failed password for invalid user oracle from 203.0.113.45 port 51236 ssh2\",\r\n    \"Oct  7 10:15:33 srv-web01 sshd[2104]: Invalid user ubuntu from 203.0.113.45 port 51237\",\r\n    \"Oct  7 10:15:33 srv-web01 sshd[2104]: Failed password for invalid user ubuntu from 203.0.113.45 port 51237 ssh2\",\r\n    \"Oct  7 10:15:34 srv-web01 sshd[2105]: Invalid user postgres from 203.0.113.45 port 51238\",\r\n    \"Oct  7 10:15:34 srv-web01 sshd[2105]: Failed password for invalid user postgres from 203.0.113.45 port 51238 ssh2\",\r\n    \"Oct  7 10:15:35 srv-web01 sshd[2106]: Invalid user guest from 203.0.113.45 port 51239\",\r\n    \"Oct  7 10:15:35 srv-web01 sshd[2106]: Failed password for invalid user guest from 203.0.113.45 port 51239 ssh2\",\r\n    \"Oct  7 10:15:36 srv-web01 sshd[2107]: Invalid user pi from 203.0.113.45 port 51240\",\r\n    \"Oct  7 10:15:36 srv-web01 sshd[2107]: Failed password for invalid user pi from 203.0.113.45 port 51240 ssh2\",\r\n    \"Oct  7 10:15:37 srv-web01 sshd[2108]: Invalid user mysql from 203.0.113.45 port 51241\",\r\n    \"Oct  7 10:15:37 srv-web01 sshd[2108]: Failed password for invalid user mysql from 203.0.113.45 port 51241 ssh2\",\r\n    \"Oct  7 11:47:03 srv-web01 sshd[3307]: Accepted password for luis from 198.51.100.7 port 45501 ssh2\"\r\n  ],\r\n  \"umbral\": 1.5,\r\n  \"lista_blanca\": []\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/analizar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "analizar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Líneas basura",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"lineas\": [\r\n    \"hola\",\r\n    \"esto no es una linea de auth.log\",\r\n    \"12345\",\r\n    \"\"\r\n  ],\r\n  \"umbral\": 0.7,\r\n  \"lista_blanca\": []\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/analizar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "analizar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Línea casi válida",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"lineas\": [\r\n    \"Foo  7 10:15:32 srv-web01 sshd[1234]: Failed password for root from 203.0.113.9 port 51234 ssh2\",\r\n    \"Oct  7 09:02:11 srv-web01 sshd[1840]: Failed password for ana from 192.168.1.20 port 40112 ssh2\"\r\n  ],\r\n  \"umbral\": 0.7,\r\n  \"lista_blanca\": []\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/analizar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "analizar"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
