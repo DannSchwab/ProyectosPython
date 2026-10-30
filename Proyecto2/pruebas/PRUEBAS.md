@@ -15,7 +15,7 @@ Las pruebas se han ejecutado con la API iniciada localmente mediante:
 python -m uvicorn api.main:app --reload
 ```
 
-También se han utilizado Postman para enviar las peticiones HTTP y comprobar las respuestas de la API.
+También se ha utilizado Postman para enviar las peticiones HTTP y comprobar las respuestas de la API.
 
 ## 2. Resumen de resultados
 
@@ -109,7 +109,7 @@ Mensaje devuelto:
 ### Prueba 5. Línea con un mes que no existe
 
 - **Fichero:** `peticiones/extra_linea_casi_valida.json`
-- **Resultado esperado:** procesar la petición sin provocar un error interno; la línea no válida debe ignorarse si el comportamiento acordado con el equipo es continuar con las líneas válidas.
+- **Resultado esperado:** HTTP 200, sin error interno: según el contrato, la línea con el mes inexistente se cuenta en `lineas_ignoradas` y se analiza el resto.
 - **Resultado obtenido:** HTTP 200.
 
 Respuesta obtenida:
@@ -142,23 +142,28 @@ En la prueba correcta, la API devuelve una explicación que combina varios de es
 El flujo de la aplicación es el siguiente:
 
 ```text
-Postman o cliente HTTP
+Interfaz web (interfaz/index.html, en el navegador)
+        |  POST /analizar con fetch: líneas del log, umbral y lista blanca (JSON)
+        v
+API (FastAPI, api/main.py): recibe y valida el JSON
         |
         v
-API (FastAPI): recibe y valida el JSON
+logtools.py: lee las líneas y calcula 11 características por IP
         |
         v
-Procesamiento de logs y extracción de características
+Modelo de IA (modelo.joblib): probabilidad de que cada IP sea atacante, que se compara con el umbral
         |
         v
-Modelo de IA (modelo.joblib): estima el comportamiento sospechoso
+api/motivos.py (explicar_motivo): explica por qué se marca cada IP
         |
         v
-explicar_motivo(): genera una explicación legible
+Respuesta JSON: líneas ignoradas, IPs analizadas e IPs sospechosas
         |
         v
-Respuesta JSON: líneas ignoradas, IP analizadas e IP sospechosas
+Interfaz web: muestra la tabla o el error; la decisión la toma una persona
 ```
+
+Las mismas peticiones se pueden enviar con Postman (colección `P2_detector.postman_collection.json`) o desde la documentación interactiva de FastAPI en `/docs`, que es como se han hecho estas pruebas. La API nunca bloquea una IP: solo informa.
 
 La API permite enviar una petición mediante Postman o desde la documentación interactiva de FastAPI en `/docs`. Tras validar la entrada, procesa las líneas del log, extrae características, utiliza el modelo entrenado y devuelve los resultados en JSON.
 
@@ -192,8 +197,12 @@ La función `explicar_motivo()` complementa la predicción con razones comprensi
 
 **Si el detector bloquea por error la IP del director, ¿qué ha fallado y cómo lo evitarías?**
 
+Con nuestros datos se ve este tipo de error: en el experimento E1, con un umbral de 0,1 el modelo marca como sospechosa 1 IP legítima. Además, la IP 192.168.1.249, un script de monitorización mal configurado, acumula 37 fallos de contraseña y parece un ataque aunque sea legítima. Al director le podría pasar algo parecido si se equivoca varias veces de contraseña o se conecta desde una red nueva.
+
 Se ha producido un **falso positivo**, es decir, el detector ha identificado como sospechosa una IP que realmente es legítima. Esto puede ocurrir cuando el modelo interpreta incorrectamente el comportamiento de una dirección IP.
 
 Para evitarlo, utilizaríamos la **lista blanca**, que existe precisamente para excluir del análisis de detección las direcciones IP de confianza, como la del director. De esta manera, aunque esa IP presente algún comportamiento que pueda parecer sospechoso, no se marcaría como atacante.
+
+Eso sí, la lista blanca también tiene un riesgo: si el ordenador del director se viera comprometido, los ataques que salieran desde su IP no se señalarían. Por eso conviene que sea una lista corta y revisada.
 
 Además, el sistema debería utilizarse como herramienta de apoyo y no bloquear automáticamente las direcciones IP. Antes de aplicar un bloqueo, una persona responsable tendría que revisar la alerta, la probabilidad y los motivos proporcionados por el detector.
