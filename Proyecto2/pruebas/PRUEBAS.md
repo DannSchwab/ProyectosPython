@@ -15,6 +15,8 @@ Las pruebas se han ejecutado con la API iniciada localmente mediante:
 python -m uvicorn api.main:app --reload
 ```
 
+También se han utilizado Postman para enviar las peticiones HTTP y comprobar las respuestas de la API.
+
 ## 2. Resumen de resultados
 
 | # | Prueba | Fichero de petición | Código esperado | Código obtenido | ¿Coincide? |
@@ -160,13 +162,33 @@ Respuesta JSON: líneas ignoradas, IP analizadas e IP sospechosas
 
 La API permite enviar una petición mediante Postman o desde la documentación interactiva de FastAPI en `/docs`. Tras validar la entrada, procesa las líneas del log, extrae características, utiliza el modelo entrenado y devuelve los resultados en JSON.
 
-## 6. Conclusión
+## 6. Colección de Postman y evidencias
+
+Para facilitar la repetición de las pruebas, se ha creado y exportado desde Postman una colección llamada `P2_detector.postman_collection.json`.
+
+La colección contiene las cinco peticiones utilizadas durante las pruebas. Todas utilizan el método `POST` y el endpoint:
+
+`http://127.0.0.1:8000/analizar`
+
+Los ficheros de las peticiones se encuentran en `pruebas/peticiones/` y la colección exportada se encuentra en `pruebas/`.
+
+También se ha preparado la carpeta `pruebas/capturas/` para almacenar las evidencias visuales de los resultados obtenidos en Postman:
+
+- `01_correcta.png`: petición correcta.
+- `02_lista_blanca.png`: prueba de lista blanca.
+- `03_umbral.png`: umbral fuera de rango.
+- `04_lineas_basura.png`: petición con líneas basura.
+- `05_linea_invalida.png`: línea con un mes que no existe.
+
+Estas capturas permiten comprobar visualmente las peticiones realizadas, los códigos HTTP y las respuestas recibidas.
+
+## 7. Conclusión
 
 Las cinco pruebas realizadas han obtenido los códigos HTTP esperados. La API acepta las peticiones válidas, rechaza el umbral fuera de rango y las entradas que no contienen ninguna línea reconocible, y puede ignorar una línea no válida sin provocar un error interno.
 
 La función `explicar_motivo()` complementa la predicción con razones comprensibles para que una persona pueda revisar el resultado. El detector debe utilizarse como herramienta de apoyo: una IP no debería bloquearse automáticamente solo por la predicción del modelo. Antes de tomar una medida, una persona responsable debe revisar la probabilidad, los motivos y los registros disponibles para reducir el riesgo de falsos positivos.
 
-## 7. Pregunta de defensa
+## 8. Pregunta de defensa
 
 **¿Qué pasaría si el director bloquea una IP por error?**
 
