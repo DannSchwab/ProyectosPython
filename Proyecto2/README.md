@@ -63,7 +63,7 @@ Cada uno lo escribe en su propio fichero: en los cuadernos, en la sección "8. M
 | Errores | Código 422 con un campo `detail` que lo explica (un texto o una lista de textos). 503 si falta el modelo. Nunca un 500 |
 | CORS | La API acepta llamadas desde cualquier página (`CORSMiddleware`), para que la interfaz web funcione se abra como se abra |
 | Motivo | T6 programa `explicar_motivo(fila)` en `api/motivos.py`; T4 la llama |
-| Interfaz | Página web responsive (HTML + JavaScript con `fetch`) que se vea bien también en el móvil *(a confirmar con Alejandro)* |
+| Interfaz | Página web responsive (HTML + JavaScript con `fetch`) que se ve bien también en el móvil |
 
 El detalle de la API (formatos, errores y fallos conocidos del kit) está en [`docs/CONTRATO_API.md`](docs/CONTRATO_API.md). Si hay que cambiar algo del contrato, se habla antes con el jefe.
 
@@ -135,7 +135,7 @@ jupyter notebook
 
 Todos los comandos se ejecutan **desde la carpeta `Proyecto2/`**. `modelo.joblib` solo es fiable con la misma versión de scikit-learn con la que se entrenó: si cambias de ordenador, vuelve a ejecutar `entrenar.py`.
 
-### API *(pendiente, T4)*
+### API
 
 ```bash
 uvicorn api.main:app --reload
@@ -148,6 +148,8 @@ uvicorn api.main:app --reload
 |---|---|---|
 | `GET` | `/salud` | Comprueba que el servicio funciona. Devuelve `{"estado": "ok", ...}` y las características que espera el modelo |
 | `POST` | `/analizar` | Recibe líneas de `auth.log`, un umbral y una lista blanca. Devuelve las líneas ignoradas, las IPs analizadas y las sospechosas con su probabilidad y motivo |
+
+El umbral por defecto es 0.7 porque lo fija el enunciado, pero se puede enviar otro en cada petición; en el informe recomendamos 0.5. Cómo funciona la API por dentro (validaciones, errores y lista blanca): [`api/README.md`](api/README.md).
 
 ### Ejemplos de peticiones
 
@@ -188,14 +190,26 @@ Ejemplo de cuerpo (`pruebas/peticiones/lista_blanca.json`, recortado):
 
 Las mismas peticiones están en la colección de Postman `pruebas/P2_detector.postman_collection.json` (en Postman: **Import** y elegir el fichero). Lo que esperábamos y lo que obtuvimos en cada petición está en [`pruebas/PRUEBAS.md`](pruebas/PRUEBAS.md).
 
-### Interfaz *(pendiente, T5)*
+### Interfaz
 
-Cómo abrirla y usarla: ver [`interfaz/README.md`](interfaz/README.md).
+1. Con la API en marcha, abre `interfaz/index.html` en el navegador (doble clic). No necesita servidor propio.
+2. Carga `auth.log` en «Cargar un fichero de log» o pega las líneas, ajusta el umbral y, si hace falta, escribe la lista blanca (IPs separadas por comas).
+3. Pulsa **Analizar log**. Sale una tabla con las IPs sospechosas, ordenadas de mayor a menor probabilidad, con su motivo. Los errores de la API aparecen en un recuadro rojo con un mensaje comprensible. En el móvil, cada IP se ve como una tarjeta.
+
+Validaciones y problemas frecuentes: [`interfaz/README.md`](interfaz/README.md).
 
 ## Conclusiones
 
-*Pendiente.* Se completa al final con los resultados del cuaderno final (`notebooks/P2_analisis_intrusiones.ipynb`) y del informe (`docs/INFORME.md`).
+Resultados del cuaderno final ([`notebooks/P2_analisis_intrusiones.ipynb`](notebooks/P2_analisis_intrusiones.ipynb)), con la semilla 21. El detalle está en el [informe](docs/INFORME.md) y en la [preparación de la defensa](docs/DEFENSA.md).
+
+- **El sistema funciona de principio a fin.** La API valida la entrada, respeta la lista blanca, explica cada IP con un motivo y nunca bloquea; la interfaz la consume desde el ordenador y desde el móvil; las 5 pruebas de `PRUEBAS.md` dan el código esperado.
+- **Con nuestros datos el modelo acierta casi todo, pero un solo número engaña.** Con el reparto de referencia no falla ninguna de las 96 IPs de prueba; con 10 repartos distintos, el F1 va de 0,958 a 1,000 (media 0,984). Los fallos son casi siempre las mismas IPs difíciles: un script de monitorización legítimo con 37 fallos y un atacante con solo 4 intentos en 27 minutos.
+- **Es mucho mejor que una regla simple** (F1 de 0,26 a 0,36), pero los datos son sintéticos y muy fáciles: quitar cualquier característica no cambia nada, y el log «nuevo» de E5 (F1 0,990) sale del mismo generador.
+- **El umbral importa con datos nuevos.** Con el 0,7 de la API se escapan 7 de 100 atacantes (5 de ellos, equipos internos: el modelo ha aprendido que lo interno suele ser legítimo); con 0,5, solo 2, y en ninguno de los dos casos se marca una IP legítima. Recomendamos enviar 0,5 en cada petición.
+- **Recomendación:** usarlo solo como ayuda para una persona, nunca para bloquear automáticamente, y antes de producción probarlo con logs reales y añadir autenticación, HTTPS y límites de peticiones.
 
 ## Nota sobre la entrega
 
-*Pendiente.* Aquí se anotan las incidencias: tareas no entregadas o completadas por otra persona.
+- **T3 (Noel):** en la fecha límite (viernes 30, 21:00) el cuaderno tenía las hipótesis de E4–E7 y el código preparado, pero no estaba ejecutado ni tenía resultados. Daniel lo ejecutó y lo completó el sábado 31 (resultados y explicaciones, comprobación de las IPs mal clasificadas, tabla de registro, P13 y sección 8) sin cambiar las hipótesis de Noel. Queda indicado al principio del cuaderno.
+- **T7 (Daniel):** cuaderno final, informe y defensa, a partir de los borradores de cada uno. En el cuaderno final añadió dos comprobaciones, marcadas como tales: qué IPs fallan en cada reparto (E4 y E6) y qué pasa con el umbral de la API con los datos nuevos de E5. Esta última se hizo sin hipótesis previa, al revisar el umbral.
+- **Retoques del jefe en ficheros de otros:** en `pruebas/PRUEBAS.md` (Jorge), el 30/10 Daniel ajustó el resultado esperado de la prueba 5 al contrato, rehízo el esquema de la sección 5 con las piezas reales y añadió a la pregunta 1 los datos de E1 y el riesgo de la lista blanca. En `api/README.md` (Argail) se puso la semilla del grupo (21) en el comando de ejemplo.

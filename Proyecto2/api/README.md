@@ -11,11 +11,11 @@ Esta API expone el modelo de detección de intentos sospechosos en logs SSH medi
 3. Generar los datos y entrenar el modelo con la semilla acordada por el grupo:
 
 ```bash
-python generar_logs.py --seed NUMERO_LISTA --salida auth.log --etiquetas etiquetas.csv
+python generar_logs.py --seed 21 --salida auth.log --etiquetas etiquetas.csv
 python entrenar.py --log auth.log --etiquetas etiquetas.csv --salida modelo.joblib
 ```
 
-Sustituye `NUMERO_LISTA` por la semilla común del grupo. Los logs, etiquetas y el modelo son archivos locales y no se deben subir al repositorio.
+La semilla común del grupo es 21. Los logs, etiquetas y el modelo son archivos locales y no se deben subir al repositorio.
 
 ## Arrancar el servicio
 
